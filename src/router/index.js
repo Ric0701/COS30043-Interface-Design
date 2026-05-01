@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import player_dashboard from '../views/player_dashboard.vue'
-import wish_counter from '@/views/wish_counter.vue'
-import calculator from '@/views/calculator.vue'
+import wish_counter from '../views/wish_counter.vue'
+import calculator from '../views/calculator.vue'
+import todo_list from '../views/todo_list.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,6 +21,11 @@ const router = createRouter({
       path: '/calculator',
       name: 'calculator',
       component: calculator
+    },
+    {
+      path: '/todo-list',
+      name: 'todo_list',
+      component: todo_list
     }
   ],
 })

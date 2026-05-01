@@ -1,156 +1,324 @@
 <script setup>
-    import { ref, watch } from 'vue'
+    import { ref, computed, onMounted, onUnmounted } from 'vue'
     import { character_exp } from '../data/character_exp.js'
+    import { weapon_exp } from '../data/weapon_exp.js'
+    import { useTodoStore } from '../data/todo_store.js'
 
+    import { characterList, weaponList } from '../data/entity_list.js'
+
+    const todoStore = useTodoStore()
+
+    const calcType = ref('character') 
+    const hasCalculated = ref(false)
+
+    // EXP calculator
+    // Set defaults to the first item in our database arrays to prevent null errors
+    const selectedCharacter = ref(characterList[0])
+    const selectedWeapon = ref(weaponList[0])
+    
     const currentLevel = ref(1)
-    const currentExp = ref(0)
     const intendedLevel = ref(90)
+    const currentExp = ref(0)
 
     const moraNeeded = ref(0)
     const itemsNeeded = ref([0, 0, 0])
     const wastedExp = ref(0)
-    const hasCalculated = ref(false)
 
-    // Hero's Wit, Adventurer's Experience, Wanderer's Advice
-    const resourceValues = [
-        {
-            name: "Hero's Wit",
-            exp: 20000,
-            count: 0
-        },
-        {
-            name: "Adventurer's Experience",
-            exp: 5000,
-            count: 0
-        },
-        {
-            name: "Wanderer's Advice",
-            exp: 1000,
-            count: 0
-        }
+    const charResources = [
+        { name: "Hero's Wit", exp: 20000, label: "Hero's Wit (20k)" },
+        { name: "Adventurer's Experience", exp: 5000, label: "Adventurer's Experience (5k)" },
+        { name: "Wanderer's Advice", exp: 1000, label: "Wanderer's Advice (1k)" }
     ]
 
-    const values = resourceValues.map(r => r.exp)
+    const weaponResources = [
+        { name: "Mystic Enhancement Ore", exp: 10000, label: "Mystic Enhancement Ore (10k)" },
+        { name: "Fine Enhancement Ore", exp: 2000, label: "Fine Enhancement Ore (2k)" },
+        { name: "Enhancement Ore", exp: 400, label: "Enhancement Ore (400)" }
+    ]
+
+    const activeResources = computed(() => calcType.value === 'character' ? charResources : weaponResources)
+
+    // Resin calculator
+    const currentResin = ref(0)
+    const targetResin = ref(200)
+    const currentTimeString = ref('')
+    let timerInterval = null
+    const condensedResinCount = ref(0)
+    const remainingOriginalResin = ref(0)
+    const completionTime = ref('')
+    const dayOffsetString = ref('')
+
+    // Live Clock
+    const updateTime = () => {
+        const now = new Date()
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+        const dayName = days[now.getDay()]
+        const timeString = now.toLocaleTimeString('en-US', { hour12: false }) 
+        currentTimeString.value = `${dayName} ${timeString}`
+    }
+
+    onMounted(() => {
+        updateTime()
+        timerInterval = setInterval(updateTime, 1000)
+    })
+
+    onUnmounted(() => {
+        if (timerInterval) clearInterval(timerInterval)
+    })
+
+    const changeType = (newType) => {
+        calcType.value = newType
+        hasCalculated.value = false 
+    }
+
     const calculate = () => {
-        //Error prevention
+        if (calcType.value === 'resin') {
+            calculateResinLogic()
+        } else {
+            calculateExpLogic()
+        }
+    }
+
+    const calculateResinLogic = () => {
+        if (currentResin.value >= targetResin.value) {
+            alert("Desired resin must be higher than current resin.")
+            return
+        }
+
+        condensedResinCount.value = Math.floor(targetResin.value / 40)
+        remainingOriginalResin.value = targetResin.value % 40
+
+        const resinNeeded = targetResin.value - currentResin.value
+        const totalMinutes = resinNeeded * 8 
+
+        const now = new Date()
+        const finishedAt = new Date(now.getTime() + totalMinutes * 60000)
+        
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+        const finishDayName = days[finishedAt.getDay()]
+        const finishTimeString = finishedAt.toLocaleTimeString('en-US', { hour12: false })
+
+        const startDay = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+        const endDay = new Date(finishedAt.getFullYear(), finishedAt.getMonth(), finishedAt.getDate())
+        const diffTime = Math.abs(endDay - startDay)
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+        if (diffDays === 1) {
+            dayOffsetString.value = "(in a day)"
+        } else if (diffDays > 1) {
+            dayOffsetString.value = `(in ${diffDays} days)`
+        } else {
+            dayOffsetString.value = "(today)"
+        }
+
+        completionTime.value = `${finishDayName} ${finishTimeString} ${dayOffsetString.value}`
+        hasCalculated.value = true
+    }
+
+    const calculateExpLogic = () => {
         if (currentLevel.value >= intendedLevel.value) {
             alert("Intended level must be higher than current level.")
             return
         }
 
-        const target = character_exp[intendedLevel.value - 1] - (character_exp[currentLevel.value - 1] + currentExp.value)
-        let current = target
-        let max = []
+        let targetExp = 0
 
-        // moraNeeded.value = (Math.floor(target / 1000) * 1000) / 5
-
-        let items = [0, 0, 0]
-        items[0] = Math.ceil(current / values[0])
-        max.push({ usage: [...items], over: current - ((items[0] * values[0]) + (items[1] * values[1]) + (items[2] * values[2])) })
-
-        //Backtracking Search
-        const process = (usage, start) => {
-            let i = start
-            if (i === values.length - 1) return
-
-            while (usage[i] > 0) {
-                usage[i]--
-                usage[i + 1]++
-                
-                let currentTotal = usage.reduce((total, e, f) => total + (e* values[f]), 0)
-                usage[i + 1] = Math.ceil((target - currentTotal) / values[i + 1])
-
-                currentTotal = usage.reduce((total, e, f) => total + (e* values[f]), 0)
-                max.push({ usage: [...usage], over: target - currentTotal })
-
-                if (usage[i] === 0) i++
-                if (i === values.length - 1) break
-                process([...usage], start + 1)
-            }
+        if (calcType.value === 'character') {
+            targetExp = character_exp[intendedLevel.value - 1] - (character_exp[currentLevel.value - 1] + currentExp.value)
+        } else {
+            // AUTOMATIC RARITY DETECTION: Pulls rarity directly from the selected weapon object
+            let rarity = selectedWeapon.value.rarity
+            let curveIndex = rarity <= 2 ? 0 : (rarity === 3 ? 1 : 2)
+            targetExp = weapon_exp[curveIndex][intendedLevel.value - 1] - (weapon_exp[curveIndex][currentLevel.value - 1] + currentExp.value)
         }
 
-        process([...items], 1)
+        if (targetExp <= 0) {
+            itemsNeeded.value = [0, 0, 0]
+            moraNeeded.value = 0
+            wastedExp.value = 0
+            hasCalculated.value = true
+            return
+        }
 
-        //Find the most efficient combination
-        const currentMax = max
-            .filter(x => x.over <= 0)
-            .sort((a, b) => b.over - a.over)[0]
+        let remaining = targetExp
+        const vals = activeResources.value.map(r => r.exp)
 
-        //Update values
-        itemsNeeded.value = currentMax.usage
-        wastedExp.value = Math.abs(currentMax.over)
+        const item0 = Math.floor(remaining / vals[0])
+        remaining -= item0 * vals[0]
+
+        const item1 = Math.floor(remaining / vals[1])
+        remaining -= item1 * vals[1]
+
+        const item2 = Math.ceil(remaining / vals[2])
+
+        itemsNeeded.value = [item0, item1, item2]
+
+        const totalExpGained = (item0 * vals[0]) + (item1 * vals[1]) + (item2 * vals[2])
+        wastedExp.value = totalExpGained - targetExp
+        moraNeeded.value = calcType.value === 'character' ? totalExpGained / 5 : totalExpGained / 10
+
         hasCalculated.value = true
 
-        const totalExpGained = (currentMax.usage[0] * 20000) + (currentMax.usage[1] * 5000) + (currentMax.usage[2] * 1000)
-        moraNeeded.value = totalExpGained / 5
+    }
+
+    const addTodo = () => {
+        // Figure out which name we are saving based on the mode
+        const isChar = calcType.value === 'character'
+        const nameToSave = isChar ? selectedCharacter.value.name : selectedWeapon.value.name
+
+        // Format the items so the Todo list can easily read them
+        const formattedItems = activeResources.value.map((res, index) => {
+            return {
+                name: res.name,
+                label: res.label,
+                count: itemsNeeded.value[index]
+            }
+        }).filter(item => item.count > 0) // Only save items we actually need
+
+        // Send to the Pinia store
+        todoStore.addTodo({
+            type: calcType.value,
+            name: nameToSave,
+            currentLevel: currentLevel.value,
+            targetLevel: intendedLevel.value,
+            mora: Math.ceil(moraNeeded.value),
+            items: formattedItems
+        })
+
+        alert(`${nameToSave} added to Todo List!`)
     }
 </script>
 
 <style scoped>
-/* Copied from your modal styles */
-.custom-dark-card { background-color: #262636; border: none; border-radius: 12px; }
-.custom-input { background-color: #1e1e2d; color: white; border: 1px solid #3f4561; }
+    .custom-dark-card { background-color: #262636; border: none; border-radius: 12px; }
+    .custom-input { background-color: #1e1e2d; color: white; border: 1px solid #3f4561; }
+    .custom-input:focus { border-color: #0d6efd; box-shadow: none; background-color: #1e1e2d; color: white; }
+    .btn-nav { color: #b0b0b0; background-color: #1e1e2d; border: 1px solid #3f4561; }
+    .btn-nav.active { background-color: #0d6efd; border-color: #0d6efd; color: white; font-weight: bold; }
+    .resin-results { background-color: #1e1e2d; border-radius: 8px; border: 1px solid #3f4561; }
+    .divider { border-bottom: 1px solid #3f4561; position: relative; text-align: center; margin: 1.5rem 0; }
+    .divider span { background-color: #1e1e2d; padding: 0 10px; position: relative; top: -12px; color: #b0b0b0; font-size: 0.9rem; }
+    .resin-text { font-size: 1.1rem; color: #ffffff; }
 </style>
 
 <template>
-<div class="container-fluid mt-4 px-4">
-        <h1 class="fw-bold display-4 mb-4 text-dark">Character Calculator</h1>
-
-        <div class="row g-4">
-            <div class="col-12 col-lg-6">
-                <div class="card custom-dark-card p-4">
-                    <h5 class="fw-bold mb-3 text-white">Level Target</h5>
+    <div class="container-fluid mt-4 px-4 pb-5">
+        <h1 class="fw-bold display-4 mb-4 text-dark text-center">Calculators</h1>
+        
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6">
+                
+                <div class="card custom-dark-card p-4 mb-4">
                     
-                    <div class="mb-3">
-                        <label class="text-white small mb-1">Current Level</label>
-                        <input type="number" class="form-control custom-input" v-model.number="currentLevel" min="1" max="90">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="text-white small mb-1">Current EXP</label>
-                        <input type="number" class="form-control custom-input" v-model.number="currentExp" min="0">
+                    <div class="btn-group w-100 mb-4 shadow-sm">
+                        <button class="btn btn-nav" :class="{ 'active': calcType === 'character' }" @click="changeType('character')">Character</button>
+                        <button class="btn btn-nav" :class="{ 'active': calcType === 'weapon' }" @click="changeType('weapon')">Weapon</button>
+                        <button class="btn btn-nav" :class="{ 'active': calcType === 'resin' }" @click="changeType('resin')">Resin</button>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="text-white small mb-1">Intended Level</label>
-                        <input type="number" class="form-control custom-input" v-model.number="intendedLevel" :min="currentLevel" max="90">
+                    <!-- Character & Weapon Inputs -->
+                    <div v-if="calcType === 'character' || calcType === 'weapon'">
+                        
+                        <!-- CHARACTER SELECTION DROPDOWN -->
+                        <div class="mb-3" v-if="calcType === 'character'">
+                            <label class="text-white small mb-1">Select Character</label>
+                            <select class="form-select custom-input" v-model="selectedCharacter">
+                                <option v-for="char in characterList" :key="char.name" :value="char">
+                                    {{ char.name }} ({{ char.rarity }}-Star)
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- WEAPON SELECTION DROPDOWN -->
+                        <div class="mb-3" v-if="calcType === 'weapon'">
+                            <label class="text-white small mb-1">Select Weapon</label>
+                            <select class="form-select custom-input" v-model="selectedWeapon">
+                                <option v-for="weap in weaponList" :key="weap.name" :value="weap">
+                                    {{ weap.name }} ({{ weap.rarity }}-Star)
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label class="text-white small mb-1">Current Level</label>
+                                <input type="number" class="form-control custom-input" v-model.number="currentLevel" min="1" max="90">
+                            </div>
+                            <div class="col-6">
+                                <label class="text-white small mb-1">Intended Level</label>
+                                <input type="number" class="form-control custom-input" v-model.number="intendedLevel" :min="currentLevel" max="90">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <label class="text-white small mb-1">Current EXP (Optional)</label>
+                            <input type="number" class="form-control custom-input" v-model.number="currentExp" min="0">
+                        </div>
                     </div>
 
-                    <button class="btn btn-outline-light w-100" style="background-color: #3f4561; border: none;" @click="calculate">
-                        Calculate Resources
+                    <!-- Resin Inputs -->
+                    <div v-if="calcType === 'resin'">
+                        <div class="mb-3">
+                            <label class="text-white small mb-1 text-center w-100">Current Resin</label>
+                            <input type="number" class="form-control custom-input py-2" v-model.number="currentResin" min="0" max="2000">
+                        </div>
+                        <div class="mb-3 text-center text-muted small">or Desired Resin</div>
+                        <div class="mb-4">
+                            <input type="number" class="form-control custom-input py-2" v-model.number="targetResin" :min="currentResin + 1" max="2000">
+                        </div>
+                        <div class="text-center text-white mb-3">
+                            Current Time: {{ currentTimeString }}
+                        </div>
+                    </div>
+
+                    <button class="btn btn-outline-light py-2 fw-bold" style="background-color: #3f4561; border: none; width: fit-content;" @click="calculate">
+                        Calculate
                     </button>
                 </div>
-            </div>
 
-            <div class="col-12 col-lg-6" v-if="hasCalculated">
-                <div class="card custom-dark-card p-4 h-100">
+                <!-- EXP Results Card -->
+                <div class="card custom-dark-card p-4" v-if="hasCalculated && (calcType === 'character' || calcType === 'weapon')">
                     <h5 class="fw-bold mb-3 text-white">Resources Needed</h5>
-                    
                     <ul class="list-group list-group-flush mb-4" style="border-radius: 8px; overflow: hidden;">
-                        <li class="list-group-item d-flex justify-content-between align-items-center bg-dark text-white border-secondary">
-                            Hero's Wit (20k)
-                            <span class="badge bg-primary rounded-pill">{{ itemsNeeded[0] }}</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center bg-dark text-white border-secondary">
-                            Adventurer's Experience (5k)
-                            <span class="badge bg-primary rounded-pill">{{ itemsNeeded[1] }}</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center bg-dark text-white border-secondary">
-                            Wanderer's Advice (1k)
-                            <span class="badge bg-primary rounded-pill">{{ itemsNeeded[2] }}</span>
+                        <li v-for="(item, index) in activeResources" :key="index" class="list-group-item d-flex justify-content-between align-items-center bg-dark text-white border-secondary py-3">
+                            {{ item.label }}
+                            <span class="badge bg-primary rounded-pill fs-6">{{ itemsNeeded[index] }}</span>
                         </li>
                     </ul>
-
-                    <div class="info-box p-3 mb-2 rounded bg-dark d-flex justify-content-between">
+                    <div class="info-box p-3 mb-2 rounded bg-dark d-flex justify-content-between align-items-center">
                         <span class="text-white">Mora Needed</span>
-                        <span class="text-warning fw-bold">{{ moraNeeded.toLocaleString() }}</span>
+                        <span class="text-warning fw-bold fs-5">{{ Math.ceil(moraNeeded).toLocaleString() }}</span>
                     </div>
-
-                    <div class="info-box p-3 rounded bg-dark d-flex justify-content-between" v-if="wastedExp > 0">
+                    <div class="info-box p-3 rounded bg-dark d-flex justify-content-between align-items-center" v-if="wastedExp > 0">
                         <span class="text-white">Wasted EXP</span>
-                        <span class="text-danger fw-bold">{{ wastedExp.toLocaleString() }}</span>
+                        <span class="text-danger fw-bold fs-5">{{ wastedExp.toLocaleString() }}</span>
+                    </div>
+                    <button class="btn btn-outline-info w-100 mt-3 py-2 fw-bold" @click="addTodo">
+                        <i class="bi bi-card-checklist me-2"></i> Add to Todo List
+                    </button>
+                </div>
+
+                <!-- Resin Results Card -->
+                <div class="card custom-dark-card p-4" v-if="hasCalculated && calcType === 'resin'">
+                    <div class="resin-results p-4">
+                        <div class="text-center resin-text mb-3">
+                            {{ targetResin }} × Original Resin
+                        </div>
+                        <div class="divider">
+                            <span>or</span>
+                        </div>
+                        <div class="text-center resin-text mb-2">
+                            {{ remainingOriginalResin }} × Original Resin
+                        </div>
+                        <div class="text-center resin-text mb-4">
+                            {{ condensedResinCount }} × Condensed Resin
+                        </div>
+                        <div class="text-danger mt-3 pb-2 border-bottom border-secondary">
+                            Will be replenished at: {{ completionTime }}
+                        </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
