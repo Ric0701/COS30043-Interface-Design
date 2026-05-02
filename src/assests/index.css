@@ -1,0 +1,35 @@
+/* Navbar */
+.navbar-color {
+    background-color: #3b4e77;
+}
+
+/* General */
+body, #app {
+    background-color: rgb(218, 239, 243) !important;
+    margin: 0;
+    min-height: 100vh;
+}
+
+/* Todo List */
+.custom-dark-bg { background-color: rgb(218, 239, 243); min-height: 100vh; color: white; }
+.custom-card { background-color: #262636; border: none; border-radius: 12px; }
+.list-group-item { background-color: transparent; border-color: #3f4561; color: white; }
+.summary-box { background-color: #1a1a24; border-radius: 8px; padding: 15px; }
+
+/* Footer */
+.custom-footer {
+    background-color: #3b4e77;
+    border-top: 1px solid #3f4561;
+    margin-top: auto;
+}
+.footer-link {
+    color: #c2d3ec;
+    text-decoration: none;
+    margin: 0 10px;
+    transition: color 0.2s ease;
+}
+
+.footer-link:hover {
+    color: #a5c4f1;
+    text-decoration: underline;
+}

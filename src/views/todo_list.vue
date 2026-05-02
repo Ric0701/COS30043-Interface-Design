@@ -4,15 +4,12 @@
 </script>
 
 <style scoped>
-    .custom-dark-bg { background-color: #1e1e2d; min-height: 100vh; color: white; }
-    .custom-card { background-color: #262636; border: none; border-radius: 12px; }
-    .list-group-item { background-color: transparent; border-color: #3f4561; color: white; }
-    .summary-box { background-color: #1a1a24; border-radius: 8px; padding: 15px; }
+
 </style>
 
 <template>
     <div class="custom-dark-bg pt-4 px-4 pb-5">
-        <h1 class="fw-bold mb-4 text-white">Todo List</h1>
+        <h1 class="fw-bold mb-4 text-black">Todo List</h1>
         
         <div class="row g-4">
             
@@ -45,9 +42,9 @@
 
             <!-- RIGHT COLUMN: Individual Tasks -->
             <div class="col-12 col-lg-8">
-                <div v-if="todoStore.todos.length === 0" class="text-center text-white mt-5">
-                    <h5 class="text-white">Your Todo List is empty.</h5>
-                    <p class="text-white">Go to the Calculator to add resources here.</p>
+                <div v-if="todoStore.todos.length === 0" class="text-center text-black mt-5">
+                    <h5 class="text-black">Your Todo List is empty.</h5>
+                    <p class="text-black">Go to the Calculator to add resources here.</p>
                 </div>
 
                 <div class="card custom-card p-4 mb-4" v-for="(task, index) in todoStore.todos" :key="task.id">

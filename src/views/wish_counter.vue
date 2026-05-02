@@ -16,7 +16,7 @@
 </script>
 
 <template>
-    <div class="container-fluid mt-4 px-4">
+    <div class="container-fluid mt-4 px-4 mb-5">
         
         <div v-if="!activeHistory">
             <div class="text-left mb-4 text-dark">
