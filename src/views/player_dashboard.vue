@@ -1,19 +1,5 @@
 <style scoped>
-    :global(body) {
-        background-color: #e9f0fd;
-        color: #ffffff;
-    }
-
-    .custom-dark-card {
-        background-color: #3f4561;
-        border: none;
-        border-radius: 12px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
-
-    .text-muted, .card-title {
-        color: #b0b0b0 !important;
-    }
+    
 </style>
 
 <template>
@@ -31,7 +17,7 @@
                 <div class="card custom-dark-card mb-4">
                     <div class="card-body">
                         <p class="card-text text-muted">Calculate character and weapon ascension materials and talent books.</p>
-                        <router-link to="/calculator" class="btn btn-outline-light btn-sm mt-2">
+                        <router-link to="/calculator" class="btn btn-outline-dark btn-sm mt-2">
                             <i class="bi bi-calculator"></i> Calculator
                         </router-link>
                     </div>
@@ -42,7 +28,7 @@
                 <div class="card custom-dark-card mb-4">
                     <div class="card-body">
                         <p class="card-text text-muted">Import your wish history to keep it for more than 6 months!</p>
-                        <router-link to="/wish-counter" class="btn btn-outline-light btn-sm mt-2">
+                        <router-link to="/wish-counter" class="btn btn-outline-dark btn-sm mt-2">
                             <i class="bi bi-plus-circle"></i> Wish Counter
                         </router-link>
                     </div>

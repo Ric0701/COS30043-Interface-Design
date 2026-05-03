@@ -1,35 +1,132 @@
 /* Navbar */
 .navbar-color {
-    background-color: #3b4e77;
+  background-color: #3b4e77;
 }
 
 /* General */
-body, #app {
-    background-color: rgb(218, 239, 243) !important;
-    margin: 0;
-    min-height: 100vh;
+body,
+#app {
+  background-color: rgb(218, 239, 243) !important;
+  margin: 0;
+  min-height: 100vh;
+}
+
+/* Player Dashboard */
+.custom-dark-card {
+  background-color: white;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.text-muted,
+.card-title {
+  color: #000000 !important;
+}
+
+/* Calculator */
+.custom-input {
+  background-color: #b1d0ff;
+  color: white;
+  border: 1px solid #3f4561;
+}
+.custom-input:focus {
+  border-color: #0d6efd;
+  box-shadow: none;
+  background-color: #aeaeec;
+  color: #589afd;
+}
+.btn-nav {
+  color: #b0b0b0;
+  background-color: #ffffff;
+  color: #000000;
+  border: 1px solid #3f4561;
+}
+.btn-nav.active {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+  color: white;
+  font-weight: bold;
+}
+.btn-nav:hover {
+  background-color: #b1d0ff;
+  color: #000000;
+}
+.calculate-btn {
+  background-color: #0d6efd;
+  border: none;
+  color: white;
+  width: fit-content;
+}
+.calculate-btn:hover {
+  background-color: #b1d0ff;
+  border: 1px solid #0d6efd;
+  color: black;
+  width: fit-content;
+}
+.resin-results {
+  background-color: #b1d0ff;
+  border-radius: 8px;
+  border: 1px solid #3f4561;
+}
+.divider {
+  border-bottom: 1px solid #3f4561;
+  position: relative;
+  text-align: center;
+  margin: 1.5rem 0;
+}
+.divider span {
+  background-color: #b1d0ff;
+  padding: 0 10px;
+  position: relative;
+  top: -12px;
+  color: black;
+  font-size: 0.9rem;
+}
+.resin-text {
+  font-size: 1.1rem;
+  color: #ffffff;
+}
+.bg-light-blue {
+  background-color: #b1d0ff !important;
 }
 
 /* Todo List */
-.custom-dark-bg { background-color: rgb(218, 239, 243); min-height: 100vh; color: white; }
-.custom-card { background-color: #262636; border: none; border-radius: 12px; }
-.list-group-item { background-color: transparent; border-color: #3f4561; color: white; }
-.summary-box { background-color: #1a1a24; border-radius: 8px; padding: 15px; }
+.custom-dark-bg {
+  background-color: rgb(218, 239, 243);
+  min-height: 100vh;
+  color: white;
+}
+.custom-card {
+  background-color: #b1d0ff;
+  border: none;
+  border-radius: 12px;
+}
+.list-group-item {
+  background-color: transparent;
+  border-color: #3f4561;
+  color: white;
+}
+.summary-box {
+  background-color: #76acfd;
+  border-radius: 8px;
+  padding: 15px;
+}
 
 /* Footer */
 .custom-footer {
-    background-color: #3b4e77;
-    border-top: 1px solid #3f4561;
-    margin-top: auto;
+  background-color: #3b4e77;
+  border-top: 1px solid #3f4561;
+  margin-top: auto;
 }
 .footer-link {
-    color: #c2d3ec;
-    text-decoration: none;
-    margin: 0 10px;
-    transition: color 0.2s ease;
+  color: #c2d3ec;
+  text-decoration: none;
+  margin: 0 10px;
+  transition: color 0.2s ease;
 }
 
 .footer-link:hover {
-    color: #a5c4f1;
-    text-decoration: underline;
+  color: #a5c4f1;
+  text-decoration: underline;
 }

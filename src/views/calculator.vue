@@ -190,15 +190,7 @@
 </script>
 
 <style scoped>
-    .custom-dark-card { background-color: #262636; border: none; border-radius: 12px; }
-    .custom-input { background-color: #1e1e2d; color: white; border: 1px solid #3f4561; }
-    .custom-input:focus { border-color: #0d6efd; box-shadow: none; background-color: #1e1e2d; color: white; }
-    .btn-nav { color: #b0b0b0; background-color: #1e1e2d; border: 1px solid #3f4561; }
-    .btn-nav.active { background-color: #0d6efd; border-color: #0d6efd; color: white; font-weight: bold; }
-    .resin-results { background-color: #1e1e2d; border-radius: 8px; border: 1px solid #3f4561; }
-    .divider { border-bottom: 1px solid #3f4561; position: relative; text-align: center; margin: 1.5rem 0; }
-    .divider span { background-color: #1e1e2d; padding: 0 10px; position: relative; top: -12px; color: #b0b0b0; font-size: 0.9rem; }
-    .resin-text { font-size: 1.1rem; color: #ffffff; }
+    
 </style>
 
 <template>
@@ -221,8 +213,8 @@
                         
                         <!-- CHARACTER SELECTION DROPDOWN -->
                         <div class="mb-3" v-if="calcType === 'character'">
-                            <label class="text-white small mb-1">Select Character</label>
-                            <select class="form-select custom-input" v-model="selectedCharacter">
+                            <label class="text-dark small mb-1">Select Character</label>
+                            <select class="form-select text-dark custom-input" v-model="selectedCharacter">
                                 <option v-for="char in characterList" :key="char.name" :value="char">
                                     {{ char.name }} ({{ char.rarity }}-Star)
                                 </option>
@@ -231,8 +223,8 @@
 
                         <!-- WEAPON SELECTION DROPDOWN -->
                         <div class="mb-3" v-if="calcType === 'weapon'">
-                            <label class="text-white small mb-1">Select Weapon</label>
-                            <select class="form-select custom-input" v-model="selectedWeapon">
+                            <label class="text-dark small mb-1">Select Weapon</label>
+                            <select class="form-select text-dark custom-input" v-model="selectedWeapon">
                                 <option v-for="weap in weaponList" :key="weap.name" :value="weap">
                                     {{ weap.name }} ({{ weap.rarity }}-Star)
                                 </option>
@@ -241,59 +233,59 @@
 
                         <div class="row g-3 mb-3">
                             <div class="col-6">
-                                <label class="text-white small mb-1">Current Level</label>
-                                <input type="number" class="form-control custom-input" v-model.number="currentLevel" min="1" max="90">
+                                <label class="text-dark small mb-1">Current Level</label>
+                                <input type="number" class="form-control custom-input text-dark" v-model.number="currentLevel" min="1" max="90">
                             </div>
                             <div class="col-6">
-                                <label class="text-white small mb-1">Intended Level</label>
-                                <input type="number" class="form-control custom-input" v-model.number="intendedLevel" :min="currentLevel" max="90">
+                                <label class="text-dark small mb-1">Intended Level</label>
+                                <input type="number" class="form-control custom-input text-dark" v-model.number="intendedLevel" :min="currentLevel" max="90">
                             </div>
                         </div>
                         
                         <div class="mb-2">
-                            <label class="text-white small mb-1">Current EXP (Optional)</label>
-                            <input type="number" class="form-control custom-input" v-model.number="currentExp" min="0">
+                            <label class="text-dark small mb-1">Current EXP (Optional)</label>
+                            <input type="number" class="form-control custom-input text-dark" v-model.number="currentExp" min="0">
                         </div>
                     </div>
 
                     <!-- Resin Inputs -->
                     <div v-if="calcType === 'resin'">
                         <div class="mb-3">
-                            <label class="text-white small mb-1 text-center w-100">Current Resin</label>
-                            <input type="number" class="form-control custom-input py-2" v-model.number="currentResin" min="0" max="2000">
+                            <label class="text-dark small mb-1 text-center w-100">Current Resin</label>
+                            <input type="number" class="form-control custom-input py-2 text-dark" v-model.number="currentResin" min="0" max="2000">
                         </div>
                         <div class="mb-3 text-center text-muted small">or Desired Resin</div>
                         <div class="mb-4">
-                            <input type="number" class="form-control custom-input py-2" v-model.number="targetResin" :min="currentResin + 1" max="2000">
+                            <input type="number" class="form-control custom-input py-2 text-dark" v-model.number="targetResin" :min="currentResin + 1" max="2000">
                         </div>
-                        <div class="text-center text-white mb-3">
+                        <div class="text-center text-dark mb-3">
                             Current Time: {{ currentTimeString }}
                         </div>
                     </div>
 
-                    <button class="btn btn-outline-light py-2 fw-bold" style="background-color: #3f4561; border: none; width: fit-content;" @click="calculate">
+                    <button class="btn btn-outline-light py-2 fw-bold calculate-btn" style="" @click="calculate">
                         Calculate
                     </button>
                 </div>
 
                 <!-- EXP Results Card -->
                 <div class="card custom-dark-card p-4" v-if="hasCalculated && (calcType === 'character' || calcType === 'weapon')">
-                    <h5 class="fw-bold mb-3 text-white">Resources Needed</h5>
+                    <h5 class="fw-bold mb-3 text-dark">Resources Needed</h5>
                     <ul class="list-group list-group-flush mb-4" style="border-radius: 8px; overflow: hidden;">
-                        <li v-for="(item, index) in activeResources" :key="index" class="list-group-item d-flex justify-content-between align-items-center bg-dark text-white border-secondary py-3">
+                        <li v-for="(item, index) in activeResources" :key="index" class="list-group-item d-flex justify-content-between align-items-center bg-light-blue text-dark border-secondary py-3">
                             {{ item.label }}
                             <span class="badge bg-primary rounded-pill fs-6">{{ itemsNeeded[index] }}</span>
                         </li>
                     </ul>
-                    <div class="info-box p-3 mb-2 rounded bg-dark d-flex justify-content-between align-items-center">
-                        <span class="text-white">Mora Needed</span>
-                        <span class="text-warning fw-bold fs-5">{{ Math.ceil(moraNeeded).toLocaleString() }}</span>
+                    <div class="info-box p-3 mb-2 rounded bg-light-blue d-flex justify-content-between align-items-center">
+                        <span class="text-black">Mora Needed</span>
+                        <span class="text-dark fw-bold fs-5">{{ Math.ceil(moraNeeded).toLocaleString() }}</span>
                     </div>
-                    <div class="info-box p-3 rounded bg-dark d-flex justify-content-between align-items-center" v-if="wastedExp > 0">
-                        <span class="text-white">Wasted EXP</span>
+                    <div class="info-box p-3 rounded bg-light-blue d-flex justify-content-between align-items-center" v-if="wastedExp > 0">
+                        <span class="text-black">Wasted EXP</span>
                         <span class="text-danger fw-bold fs-5">{{ wastedExp.toLocaleString() }}</span>
                     </div>
-                    <button class="btn btn-outline-info w-100 mt-3 py-2 fw-bold" @click="addTodo">
+                    <button class="btn btn-outline-primary w-100 mt-3 py-2 fw-bold" @click="addTodo">
                         <i class="bi bi-card-checklist me-2"></i> Add to Todo List
                     </button>
                 </div>
@@ -301,19 +293,19 @@
                 <!-- Resin Results Card -->
                 <div class="card custom-dark-card p-4" v-if="hasCalculated && calcType === 'resin'">
                     <div class="resin-results p-4">
-                        <div class="text-center resin-text mb-3">
+                        <div class="text-center resin-text mb-3 text-black">
                             {{ targetResin }} × Original Resin
                         </div>
                         <div class="divider">
                             <span>or</span>
                         </div>
-                        <div class="text-center resin-text mb-2">
+                        <div class="text-center resin-text mb-2 text-black">
                             {{ remainingOriginalResin }} × Original Resin
                         </div>
-                        <div class="text-center resin-text mb-4">
+                        <div class="text-center resin-text mb-4 text-black">
                             {{ condensedResinCount }} × Condensed Resin
                         </div>
-                        <div class="text-danger mt-3 pb-2 border-bottom border-secondary">
+                        <div class="text-danger mt-3 pb-2 border-bottom border-secondary fw-bold">
                             Will be replenished at: {{ completionTime }}
                         </div>
                     </div>

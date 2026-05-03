@@ -1,9 +1,9 @@
 <template>
     <footer class="custom-footer py-4">
         <div class="container-fluid">
-            <h3 class="mb-1 fw-bold text-white">Genshin Pull Analysis</h3>
+            <h5 class="mb-1 fw-bold text-white">Genshin Pull Analysis</h5>
 
-            <p class="small mb-0 footer-text-muted">
+            <p class="small mb-0 footer-text-muted text-white">
                 Your companion for wish tracking and farming.
             </p>
 
