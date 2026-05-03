@@ -2,6 +2,10 @@ import { defineStore } from 'pinia'
 
 export const useGachaStore = defineStore('gacha', {
     state: () => ({
+        character_list: [],
+        weapon_list: [],
+        is_fetching_data: false,
+
         // Limited Banner Character
         limited_character_lifetime_pulls: [],
         limited_character_four_star_pity: 0,
@@ -20,6 +24,51 @@ export const useGachaStore = defineStore('gacha', {
         standard_five_star_pity: 0
     }),
     actions: {
+        async fetch_game_data() {
+            if (this.character_list.length > 0 && this.weapon_list.length > 0) return;
+
+            this.is_fetching_data = true;
+            try {
+                const [charResponse, weaponResponse] = await Promise.all([
+                    fetch('/data/characters.json'),
+                    fetch('/data/weaponList.json')
+                ])
+
+                if (!charResponse.ok || !weaponResponse.ok) throw new Error("Failed to load local database")
+
+                const charData = await charResponse.json()
+                const weaponData = await weaponResponse.json()
+                
+                const parseRarity = (item) => {
+                    let numericRarity = 5; 
+                    if (item.rarity === 'rare' || item.rarity === 4) numericRarity = 4
+                    else if (typeof item.rarity === 'number') numericRarity = item.rarity
+                    
+                    return {
+                        name: item.id,
+                        rarity: numericRarity
+                    }
+                }
+
+                this.character_list = charData.map(parseRarity).sort((a, b) => {
+                    if (a.rarity !== b.rarity) {
+                        return a.rarity - b.rarity
+                    }
+                    return a.name.localeCompare(b.name)
+                })
+                this.weapon_list = weaponData.map(parseRarity).sort((a, b) => {
+                    if (a.rarity !== b.rarity) {
+                        return a.rarity - b.rarity
+                    }
+                    return a.name.localeCompare(b.name)
+                })
+            } catch (error) {
+                console.error("Database error:", error);
+            } finally {
+                this.is_fetching_data = false;
+            }
+        },
+
         add_pull(item) {
             
             const type = item.type;
@@ -56,24 +105,6 @@ export const useGachaStore = defineStore('gacha', {
             this[`${type}_five_star_pity`] = poppedItem.previous_five_star_pity;
             this[`${type}_four_star_pity`] = poppedItem.previous_four_star_pity;
 
-            // let new5Pity = 0;
-            // let new4Pity = 0;
-
-            // for (const pull of historyArray) {
-            //     if (pull.rarity === 5) {
-            //         new5Pity = 0;
-            //         new4Pity++;
-            //     } else if (pull.rarity === 4) {
-            //         new4Pity = 0;
-            //         new5Pity++;
-            //     } else {
-            //         new5Pity++;
-            //         new4Pity++;
-            //     }
-            // }
-
-            // this[`${type}_five_star_pity`] = new5Pity;
-            // this[`${type}_four_star_pity`] = new4Pity;
         },
 
         force_update_pity(payload) {

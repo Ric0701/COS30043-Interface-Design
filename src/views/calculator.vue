@@ -3,18 +3,19 @@
     import { character_exp } from '../data/character_exp.js'
     import { weapon_exp } from '../data/weapon_exp.js'
     import { useTodoStore } from '../data/todo_store.js'
+    import { useGachaStore } from '../gacha_store.js'
 
-    import { characterList, weaponList } from '../data/entity_list.js'
+    // import { characterList, weaponList } from '../data/entity_list.js'
 
     const todoStore = useTodoStore()
-
+    const gachaStore = useGachaStore()
     const calcType = ref('character') 
     const hasCalculated = ref(false)
 
     // EXP calculator
     // Set defaults to the first item in our database arrays to prevent null errors
-    const selectedCharacter = ref(characterList[0])
-    const selectedWeapon = ref(weaponList[0])
+    const selectedCharacter = ref(null)
+    const selectedWeapon = ref(null)
     
     const currentLevel = ref(1)
     const intendedLevel = ref(90)
@@ -60,6 +61,15 @@
     onMounted(() => {
         updateTime()
         timerInterval = setInterval(updateTime, 1000)
+
+        gachaStore.fetch_game_data().then(() => {
+            if (gachaStore.character_list.length > 0) {
+                selectedCharacter.value = gachaStore.character_list[0]
+            }
+            if (gachaStore.weapon_list.length > 0) {
+                selectedWeapon.value = gachaStore.weapon_list[0]
+            }
+        })
     })
 
     onUnmounted(() => {
@@ -210,25 +220,30 @@
 
                     <!-- Character & Weapon Inputs -->
                     <div v-if="calcType === 'character' || calcType === 'weapon'">
-                        
-                        <!-- CHARACTER SELECTION DROPDOWN -->
-                        <div class="mb-3" v-if="calcType === 'character'">
-                            <label class="text-dark small mb-1">Select Character</label>
-                            <select class="form-select text-dark custom-input" v-model="selectedCharacter">
-                                <option v-for="char in characterList" :key="char.name" :value="char">
-                                    {{ char.name }} ({{ char.rarity }}-Star)
-                                </option>
-                            </select>
+                        <div v-if="gachaStore.is_fetching_data" class="text-dark mb-3 text-center fw-bold">
+                            Loading database...
                         </div>
 
-                        <!-- WEAPON SELECTION DROPDOWN -->
-                        <div class="mb-3" v-if="calcType === 'weapon'">
-                            <label class="text-dark small mb-1">Select Weapon</label>
-                            <select class="form-select text-dark custom-input" v-model="selectedWeapon">
-                                <option v-for="weap in weaponList" :key="weap.name" :value="weap">
-                                    {{ weap.name }} ({{ weap.rarity }}-Star)
-                                </option>
-                            </select>
+                        <div v-else>
+                            <!-- Character Selection Dropdown -->
+                            <div class="mb-3" v-if="calcType === 'character'">
+                                <label class="text-dark small mb-1">Select Character</label>
+                                <select class="form-select text-dark custom-input" v-model="selectedCharacter">
+                                    <option v-for="char in gachaStore.character_list" :key="char.name" :value="char">
+                                        {{ char.name }} ({{ char.rarity }}-Star)
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Weapon Selection Dropdown -->
+                            <div class="mb-3" v-if="calcType === 'weapon'">
+                                <label class="text-dark small mb-1">Select Weapon</label>
+                                <select class="form-select text-dark custom-input" v-model="selectedWeapon">
+                                    <option v-for="weap in gachaStore.weapon_list" :key="weap.name" :value="weap">
+                                        {{ weap.name }} ({{ weap.rarity }}-Star)
+                                    </option>
+                                </select>
+                            </div>
                         </div>
 
                         <div class="row g-3 mb-3">
@@ -263,8 +278,12 @@
                         </div>
                     </div>
 
-                    <button class="btn btn-outline-light py-2 fw-bold calculate-btn" style="" @click="calculate">
-                        Calculate
+                    <button 
+                        class="btn py-2 fw-bold calculate-btn" 
+                        @click="calculate"
+                        :disabled="gachaStore.is_fetching_data || (!selectedCharacter && calcType === 'character')"
+                    >
+                        {{ gachaStore.is_fetching_data ? 'Loading...' : 'Calculate' }}
                     </button>
                 </div>
 

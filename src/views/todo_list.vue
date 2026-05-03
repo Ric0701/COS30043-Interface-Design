@@ -22,7 +22,7 @@
                     </div>
 
                     <div class="summary-box">
-                        <h6 class="mb-3 text-black">Items Needed</h6>
+                        <h6 class="mb-3 text-black fw-bold">Items Needed</h6>
                         <ul class="list-group list-group-flush">
                             <li v-for="(item, index) in todoStore.summary.items" :key="index" class="list-group-item d-flex justify-content-between align-items-center px-0 text-black">
                                 {{ item.label }}

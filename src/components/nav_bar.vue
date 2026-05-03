@@ -10,7 +10,7 @@ const toggleMenu = () => {
 </script>
 
 <template>
-    <nav class="navbar navbar-color navbar-dark sticky-top" style="z-index: 1060;">
+    <nav class="navbar navbar-expand-lg navbar-color navbar-dark sticky-top" style="z-index: 1060;">
         <div class="container-fluid">
             <RouterLink class="navbar-brand text-white fw-bold" to="/">Genshin Pull Analysis</RouterLink>
 
