@@ -1,20 +1,38 @@
 import { defineStore } from 'pinia'
+import { useAuthStore } from './auth_store';
 
 export const useTodoStore = defineStore('todo', {
     state: () => ({
         todos: []
     }),
     actions: {
+        loadData() {
+            const authStore = useAuthStore()
+            if (!authStore.currentUser) {
+                this.todos = []
+                return
+            }
+            const data = localStorage.getItem(`todos_${authStore.currentUser}`)
+            this.todos = data ? JSON.parse(data) : []
+        },
+        saveData(){
+            const authStore = useAuthStore()
+            if (authStore.currentUser) {
+                localStorage.setItem(`todos_${authStore.currentUser}`, JSON.stringify(this.todos))
+            }
+        },
         addTodo(item) {
             // Assign a simple unique ID based on the current timestamp
             this.todos.push({
                 id: Date.now(),
                 ...item
             })
+            this.saveData()
         },
         removeTodo(id) {
             // Filter out the task that matches the ID
             this.todos = this.todos.filter(task => task.id !== id)
+            this.saveData()
         }
     },
     getters: {

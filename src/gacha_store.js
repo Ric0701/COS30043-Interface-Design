@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { useAuthStore } from './data/auth_store';
 
 export const useGachaStore = defineStore('gacha', {
     state: () => ({
@@ -24,6 +25,47 @@ export const useGachaStore = defineStore('gacha', {
         standard_five_star_pity: 0
     }),
     actions: {
+        resetData() {
+            this.limited_character_lifetime_pulls = [];
+            this.limited_character_four_star_pity = 0;
+            this.limited_character_five_star_pity = 0;
+            this.limited_weapon_lifetime_pulls = [];
+            this.limited_weapon_four_star_pity = 0;
+            this.limited_weapon_five_star_pity = 0;
+            this.standard_lifetime_pulls = [];
+            this.standard_four_star_pity = 0;
+            this.standard_five_star_pity = 0;
+        },
+        loadData() {
+            const authStore = useAuthStore()
+            if (!authStore.currentUser) {
+                this.resetData()
+                return
+            }
+            const data = localStorage.getItem(`gacha_${authStore.currentUser}`)
+            if (data) {
+                Object.assign(this, JSON.parse(data))
+            } else {
+                this.resetData()
+            }
+        },
+        saveData() {
+            const authStore = useAuthStore()
+            if (!authStore.currentUser) return;
+            
+            const dataToSave = {
+                limited_character_lifetime_pulls: this.limited_character_lifetime_pulls,
+                limited_character_four_star_pity: this.limited_character_four_star_pity,
+                limited_character_five_star_pity: this.limited_character_five_star_pity,
+                limited_weapon_lifetime_pulls: this.limited_weapon_lifetime_pulls,
+                limited_weapon_four_star_pity: this.limited_weapon_four_star_pity,
+                limited_weapon_five_star_pity: this.limited_weapon_five_star_pity,
+                standard_lifetime_pulls: this.standard_lifetime_pulls,
+                standard_four_star_pity: this.standard_four_star_pity,
+                standard_five_star_pity: this.standard_five_star_pity
+            };
+            localStorage.setItem(`gacha_${authStore.currentUser}`, JSON.stringify(dataToSave));
+        },
         async fetch_game_data() {
             if (this.character_list.length > 0 && this.weapon_list.length > 0) return;
 
@@ -89,6 +131,8 @@ export const useGachaStore = defineStore('gacha', {
                 this[`${type}_five_star_pity`]++;
                 this[`${type}_four_star_pity`]++;
             }
+
+            this.saveData()
         },
 
         remove_pull(payload) {
@@ -105,12 +149,15 @@ export const useGachaStore = defineStore('gacha', {
             this[`${type}_five_star_pity`] = poppedItem.previous_five_star_pity;
             this[`${type}_four_star_pity`] = poppedItem.previous_four_star_pity;
 
+            this.saveData()
         },
 
         force_update_pity(payload) {
             const type = payload.type;
             this[`${type}_five_star_pity`] = payload.fivePity;
             this[`${type}_four_star_pity`] = payload.fourPity;
+
+            this.saveData()
         }
     }
 });

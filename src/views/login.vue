@@ -1,18 +1,27 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '../data/auth_store.js'
 
 const router = useRouter()
+const authStore = useAuthStore()
+
 const username = ref('')
 const password = ref('')
 
-//Temporary, check with database
-const handleLogin = () => {
-    if (username.value && password.value) {
-        alert('Login successful!')
+const handleLogin = async () => {
+    if (!username.value || !password.value) {
+        alert('Please enter both username and password.')
+        return
+    }
+
+    const result = await authStore.loginUser(username.value, password.value)
+    
+    if (result.success) {
+        alert(result.message)
         router.push('/')
     } else {
-        alert('Please enter both username and password.')
+        alert(result.message)
     }
 }
 </script>

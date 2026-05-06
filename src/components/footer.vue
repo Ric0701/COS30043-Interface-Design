@@ -1,7 +1,7 @@
 <template>
     <footer class="custom-footer py-4">
         <div class="container-fluid">
-            <h5 class="mb-1 fw-bold text-white">Genshin Pull Analysis</h5>
+            <h5 class="mb-1 fw-bold text-white">Genshin Companian</h5>
 
             <div class="row">
                 <div class="col-6">

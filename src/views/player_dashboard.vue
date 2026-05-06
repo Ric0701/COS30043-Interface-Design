@@ -9,7 +9,7 @@
             <div class="col-12 col-md-6 col-lg-3"> <!-- Make it compatible with multiple screens -->
                 <div class="card custom-dark-card mb-4">
                     <div class="card-body">
-                        <h5 class="card-title fw-bold">Welcome to Genshin Pull Analysis</h5>
+                        <h5 class="card-title fw-bold">Welcome to Genshin</h5>
                         <p class="card-text text-muted">Your Genshin companion for pull tracking, farming planning, ascension calculations, and progress management with todo lists and wish counters.</p>
                     </div>
                 </div>

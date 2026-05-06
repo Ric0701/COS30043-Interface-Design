@@ -10,7 +10,7 @@ const username = ref('')
 const password = ref('')
 const confirmPassword = ref('')
 
-const handleRegister = () => {
+const handleRegister = async () => {
     if (!username.value || !password.value || !confirmPassword.value) {
         alert('Please fill in all fields.')
         return
@@ -21,7 +21,7 @@ const handleRegister = () => {
         return
     }
 
-    const result = authStore.registerUser(username.value, password.value)
+    const result = await authStore.registerUser(username.value, password.value)
     
     if (result.success) {
         alert(result.message)

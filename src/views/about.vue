@@ -13,7 +13,7 @@
                         <i class="bi bi-info-circle me-2"></i> Project Purpose
                     </h4>
                     <p class="text-dark mb-0">
-                        Genshin Pull Analysis is a comprehensive companion tool designed for Genshin Impact players. Its primary goal is to help you track your wish history, calculate character and weapon ascension materials, and manage your farming schedules efficiently—all without the need to rely on cumbersome external spreadsheets.
+                        Genshin Companian is a comprehensive companion tool designed for Genshin Impact players. Its primary goal is to help you track your wish history, calculate character and weapon ascension materials, and manage your farming schedules efficiently—all without the need to rely on cumbersome external spreadsheets.
                     </p>
                 </div>
 

@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import homepage from '../views/homepage.vue'
 import player_dashboard from '../views/player_dashboard.vue'
 import wish_counter from '../views/wish_counter.vue'
 import calculator from '../views/calculator.vue'
@@ -12,6 +13,11 @@ const router = createRouter({
   routes: [
     {
       path: '/',
+      name: 'home',
+      component: homepage
+    },
+    {
+      path: '/player_dashboard',
       name: 'player_dashboard',
       component: player_dashboard
     },
