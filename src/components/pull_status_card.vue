@@ -130,7 +130,7 @@ const handleModalAdd = (modalData) => {
                     <div class="h3 mb-0 fw-bold text-warning">{{ fourStarPity }}</div>
                 </div>
                 <div class="row g-2 mb-2">
-                    <div class="row col-6">
+                    <div class="row">
                         <div class="col-6">
                             <button class="btn btn-outline-dark w-100" @click="showModal = true">Get 5★</button>
                         </div>

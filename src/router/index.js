@@ -3,6 +3,9 @@ import player_dashboard from '../views/player_dashboard.vue'
 import wish_counter from '../views/wish_counter.vue'
 import calculator from '../views/calculator.vue'
 import todo_list from '../views/todo_list.vue'
+import about from '../views/about.vue'
+import login from '../views/login.vue'
+import registration from '../views/registration.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -26,6 +29,21 @@ const router = createRouter({
       path: '/todo-list',
       name: 'todo_list',
       component: todo_list
+    },
+    {
+      path: '/about',
+      name: 'about',
+      component: about
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: login
+    },
+    {
+      path: '/registration',
+      name: 'registration',
+      component: registration
     }
   ],
 })
