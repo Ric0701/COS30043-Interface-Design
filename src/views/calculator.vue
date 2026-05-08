@@ -204,7 +204,7 @@
 </style>
 
 <template>
-    <div class="container-fluid mt-4 px-4 pb-5">
+    <div class="container-fluid d-flex min-vh-100 flex-column justify-content-center mt-5 mb-5">
         <h1 class="fw-bold display-4 mb-4 text-dark text-center">Calculators</h1>
         
         <div class="row justify-content-center">

@@ -27,7 +27,7 @@ const handleLogin = async () => {
 </script>
 
 <template>
-    <div class="container-fluid mt-5 px-4 pb-5 d-flex justify-content-center">
+    <div class="container-fluid d-flex min-vh-100 flex-column justify-content-center align-items-center">
         <div class="card custom-dark-card p-4 shadow" style="width: 100%; max-width: 400px;">
             <h2 class="fw-bold mb-4 text-dark text-center">Login</h2>
             

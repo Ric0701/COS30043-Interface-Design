@@ -1,3 +1,5 @@
+<!-- Follow this example: https://duna.com/ -->
+
 <script setup>
     import { ref, onMounted } from 'vue'
     import { useRouter } from 'vue-router'
@@ -46,14 +48,14 @@
 <template>
     <div class="homepage-container">
         
-        <!-- 1. Video Background Section -->
+        <!-- 1. Image Background Section -->
         <section class="hero-section">
             <div class="intro-vid">
-                <video 
-                    src="../assests/lib/loading_screen.mp4" 
-                    autoplay muted loop playsinline 
-                    class="fullscreen-video"
-                ></video>
+                <img 
+                    src="../assests/lib/genshin-impact-mondstadt.jpg" 
+                    alt="Background loading screen" 
+                    class="fullscreen-image"
+                ></img>
                 <div class="video-overlay"></div>
             </div>
             <div class="scroll-prompt" @click="scrollToStart">

@@ -16,14 +16,14 @@
 </script>
 
 <template>
-    <div class="container-fluid mt-4 px-4 mb-5">
+    <div class="container-fluid d-flex min-vh-100 flex-column justify-content-center">
         
         <div v-if="!activeHistory">
             <div class="text-left mb-4 text-dark">
-                <h1 class="fw-bold display-4">Wish Counter</h1>
+                <h1 class="fw-bold display-4 text-center">Wish Counter</h1>
             </div>
 
-            <div class="row g-4">
+            <div class="row g-4 justify-content-center">
                 <!-- Limited Banner Character -->
                 <PullStatusCard
                     title="Limited Banner Character"

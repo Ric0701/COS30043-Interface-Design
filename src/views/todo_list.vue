@@ -4,7 +4,7 @@
 </script>
 
 <template>
-    <div class="custom-dark-bg pt-4 px-4 pb-5">
+    <div class="container-fluid d-flex min-vh-100 flex-column justify-content-center pt-4 px-4 pb-5">
         <h1 class="fw-bold mb-4 text-black">Todo List</h1>
         
         <div class="row g-4">

@@ -3,7 +3,7 @@
 </style>
 
 <template>
-    <div class="container-fluid mt-4 px-4">
+    <div class="container-fluid mt-5 pt-5 px-4">
 
         <div class="row g-4">
             <div class="col-12 col-md-6 col-lg-3"> <!-- Make it compatible with multiple screens -->

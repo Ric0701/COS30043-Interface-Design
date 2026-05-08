@@ -1,13 +1,11 @@
 import { defineStore } from 'pinia'
 import { useTodoStore } from './todo_store.js'
 import { useGachaStore } from '../gacha_store.js'
+import CryptoJS from 'crypto-js'
 
-async function hashPassword(password) {
-    const encoder = new TextEncoder()
-    const data = encoder.encode(password)
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data)
-    const hashArray = Array.from(new Uint8Array(hashBuffer))
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+function hashPassword(password) {
+    // CryptoJS executes SHA-256 purely in JavaScript, bypassing browser Secure Context blocks
+    return CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex)
 }
 
 export const useAuthStore = defineStore('auth', {

@@ -17,9 +17,9 @@
   <div class="d-flex flex-column min-vh-100">
     <nav_bar />
 
-    <main class="flex-grow-1">
+    <!-- <main class="flex-grow-1"> -->
       <RouterView />
-    </main>
+    <!-- </main> -->
 
     <footer_bar />
   </div>

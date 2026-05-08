@@ -1,6 +1,6 @@
 <!-- components/nav_bar.vue -->
 <script setup>
-    import { ref } from 'vue';
+    import { onMounted, ref } from 'vue';
     import { RouterLink, useRouter } from 'vue-router';
     import { useAuthStore } from '../data/auth_store.js'
 
@@ -8,6 +8,7 @@
     const isUserDropdownOpen = ref(false)
     const authStore = useAuthStore();
     const router = useRouter();
+    const elementRef = ref(null);
 
     const toggleMenu = () => {
         isMenuOpen.value = !isMenuOpen.value;
@@ -23,13 +24,25 @@
         isMenuOpen.value = false;
         isUserDropdownOpen.value = false;
     };
+
+    onMounted(() => {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        if (elementRef.value) observer.observe(elementRef.value);
+    });
 </script>
 
 <template>
-    <nav class="navbar navbar-expand-lg navbar-color navbar-dark sticky-top" style="z-index: 1060;">
+    <nav ref="elementRef" class="navbar navbar-expand-lg glass-nav blur-transition-element fixed-top" style="z-index: 1060;">
         <div class="container-fluid">
             
-            <RouterLink class="navbar-brand text-white fw-bold" to="/">
+            <RouterLink class="navbar-brand text-black fw-bold" to="/">
                 <img 
                     src="../assests/lib/paimon-icon.png" 
                     alt="User Icon" 
@@ -44,15 +57,17 @@
             </button>
 
             <div :class="['collapse', 'navbar-collapse', { show: isMenuOpen }]" id="navbarContent">
-                <div class="navbar-nav ms-auto">
-                    <RouterLink class="nav-link text-white" to="/" @click="isMenuOpen = false">Character</RouterLink>
-                    <RouterLink class="nav-link text-white" to="/calculator" @click="isMenuOpen = false">Calculator</RouterLink>
-                    <RouterLink class="nav-link text-white" to="/wish-counter" @click="isMenuOpen = false">Wish Counter</RouterLink>
-                    <RouterLink class="nav-link text-white" to="/todo-list" @click="isMenuOpen = false">Todo List</RouterLink>
-                    <RouterLink class="nav-link text-white" to="/planner" @click="isMenuOpen = false">Planner</RouterLink>
+                <div class="navbar-nav mx-auto">
+                    <RouterLink class="nav-link text-black" to="/" @click="isMenuOpen = false">Character</RouterLink>
+                    <RouterLink class="nav-link text-black" to="/calculator" @click="isMenuOpen = false">Calculator</RouterLink>
+                    <RouterLink class="nav-link text-black" to="/wish-counter" @click="isMenuOpen = false">Wish Counter</RouterLink>
+                    <RouterLink class="nav-link text-black" to="/todo-list" @click="isMenuOpen = false">Todo List</RouterLink>
+                    <RouterLink class="nav-link text-black" to="/planner" @click="isMenuOpen = false">Planner</RouterLink>
+                </div>
                     
+                <div class="navbar-nav">
                     <template v-if="!authStore.currentUser">
-                        <RouterLink class="nav-link text-white" to="/login" @click="isMenuOpen = false">Login</RouterLink> 
+                        <RouterLink class="nav-link text-black" to="/login" @click="isMenuOpen = false">Login</RouterLink> 
                     </template>
                     
                     <template v-else>
@@ -67,8 +82,7 @@
                                 <img 
                                     src="../assests/lib/account.png" 
                                     alt="User Icon" 
-                                    class="rounded-circle border shadow-sm" 
-                                    style="width: 40px; height: 40px; object-fit: cover; background-color: #b1d0ff; cursor: pointer;"
+                                    class="rounded-circle shadow-sm navbar-profile-icon"
                                 >
                             </a>
                             
@@ -77,8 +91,19 @@
                                 class="dropdown-menu dropdown-menu-end mt-2 shadow profile-dropdown" 
                                 :class="{ show: isUserDropdownOpen }" 
                             >
+                                <!-- Player Dashboard Link -->
                                 <li>
-                                    <!-- Account Setting Link -->
+                                    <RouterLink 
+                                        to="/player_dashboard" 
+                                        class="dropdown-item text-dark"
+                                        @click="isMenuOpen = false; isUserDropdownOpen = false"
+                                    >
+                                        <i class="bi bi-gear me-2"></i> Your Dashboard
+                                    </RouterLink>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <!-- Account Setting Link -->
+                                <li>
                                     <RouterLink 
                                         to="/account_setting" 
                                         class="dropdown-item text-dark"
@@ -88,8 +113,8 @@
                                     </RouterLink>
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
+                                <!-- Logout Button -->
                                 <li>
-                                    <!-- Logout Button -->
                                     <button 
                                         class="dropdown-item text-danger fw-bold" 
                                         @click="handleLogout"
