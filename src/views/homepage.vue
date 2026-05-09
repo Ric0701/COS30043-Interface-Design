@@ -1,4 +1,6 @@
 <!-- Follow this example: https://duna.com/ -->
+<!-- https://www.youtube.com/watch?v=lSzfYAQYKU0&list=PLcTpn5-ROA4xWA5cJFoUnt58PXs6eWNT8 -->
+<!-- https://github.com/wrongakram/micro-interactions-docket/blob/master/src/assets/styles/notes.scss -->
 
 <script setup>
     import { ref, onMounted } from 'vue'
@@ -52,7 +54,7 @@
         <section class="hero-section">
             <div class="intro-vid">
                 <img 
-                    src="../assests/lib/genshin-impact-mondstadt.jpg" 
+                    src="../assests/lib/4K-mondstadt.jpg" 
                     alt="Background loading screen" 
                     class="fullscreen-image"
                 ></img>
