@@ -3,11 +3,70 @@
 <!-- https://github.com/wrongakram/micro-interactions-docket/blob/master/src/assets/styles/notes.scss -->
 
 <script setup>
-    import { ref, onMounted } from 'vue'
+    import { ref, computed, onMounted, onUnmounted } from 'vue'
     import { useRouter } from 'vue-router'
     import anime from 'animejs/lib/anime.es.js'
 
+    import profile_1 from '../assets/lib/Linnea-Profile.png'
+    import banner_1 from '../assets/lib/Linnea-Banner.webp'
+    import profile_2 from '../assets/lib/Chascha-Profile.png'
+    import banner_2 from '../assets/lib/Chascha-Banner.webp'
+
     const router = useRouter()
+
+    // Section 1: Banner Info
+    const bannersList = [
+        {
+            faceImage: profile_1,
+            bannerImage: banner_1
+        },
+        {
+            faceImage: profile_2,
+            bannerImage: banner_2
+        }
+    ]
+
+    // Section 2: Interactive Banner Logic
+    const trackRef = ref(null)
+    const scrollProgress = ref(0)
+
+    const handleScroll = () => {
+        if (!trackRef.value) return
+        
+        const rect = trackRef.value.getBoundingClientRect()
+        
+        // trackTop: Distance from the top of the screen to the top of our 300vh track
+        const trackTop = rect.top
+        // scrollableDistance: Total height of the track MINUS one screen height (100vh)
+        const scrollableDistance = rect.height - window.innerHeight
+
+        if (trackTop > 0) {
+            // User hasn't reached the track yet
+            scrollProgress.value = 0
+        } else if (-trackTop >= scrollableDistance) {
+            // User has scrolled past the entire track
+            scrollProgress.value = 1
+        } else {
+            // User is actively scrolling inside the track. Calculate percentage (0.0 to 1.0)
+            scrollProgress.value = -trackTop / scrollableDistance
+        }
+    }
+
+    // Attach native scroll listener
+    onMounted(() => window.addEventListener('scroll', handleScroll))
+    onUnmounted(() => window.removeEventListener('scroll', handleScroll))
+
+    const currentBannerIndex = computed(() => {
+        const index = Math.floor(scrollProgress.value * bannersList.length)
+        return Math.min(index, bannersList.length - 1)
+    })
+    
+    const switchBanner = (index) => {
+        // Manually set scrollProgress to jump to the desired banner
+        scrollProgress.value = index / bannersList.length
+        // Scroll to the track's top position
+        trackRef.value.scrollIntoView({ behavior: 'smooth' })
+    }
 
     // Section 3: Showcase Data
     const tools = [
@@ -54,30 +113,63 @@
         <section class="hero-section">
             <div class="intro-vid">
                 <img 
-                    src="../assests/lib/4K-mondstadt.jpg" 
+                    src="../assets/lib/4K-mondstadt.jpg" 
                     alt="Background loading screen" 
                     class="fullscreen-image"
-                ></img>
+                >
                 <div class="video-overlay"></div>
             </div>
+                
+            <div class="hero-title-container">
+                <h1 class="display-4 fw-bold text-white mb-3 text-shadow">Genshin Impact</h1>
+                <p class="text-white fw-bold mb-4 text-shadow">A role-playing game, a fantasy world of exploration in Teyvat.</p>
+            </div>
+
             <div class="scroll-prompt" @click="scrollToStart">
-                <h1 class="scroll-text">Scroll to Start</h1>
-                <i class="bi bi-chevron-double-down text-white fs-2"></i>
+                <h4 class="scroll-text mb-0">Click to Start</h4>
+                <i class="bi bi-chevron-double-down text-white fs-2 mt-2 d-block"></i>
             </div>
         </section>
 
         <!-- 2. Current Event Section -->
-        <section id="current-event" class="container py-5 mt-5">
-            <h2 class="fw-bold text-dark text-center mb-4">Current Banners</h2>
-            <div class="row g-4 justify-content-center">
-                <div class="col-12 col-md-10">
-                    <div class="card custom-dark-card p-4 text-center">
-                        <div class="badge bg-danger mb-2 w-auto d-inline-block">Live Now</div>
-                        <h3 class="fw-bold">Version 5.2: Teyvat Explorations</h3>
-                        <p class="text-muted">Character Banner: Alhaitham / Furina</p>
-                        <router-link to="/wish-counter" class="btn btn-primary mt-2">Check Your Pity</router-link>
+        <section id="current-event" class="scroll-track bg-light" ref="trackRef">
+            
+            <!-- The viewport sticks to the screen while the user scrolls through the 300vh track -->
+            <div class="sticky-viewport d-flex flex-column align-items-center justify-content-center py-5">
+                <h2 class="fw-bold text-dark text-center mb-5">Current Banners</h2>
+                
+                <!-- <div class="outer-frame"> -->
+                    <div id="main-component" class="main-frame">
+                        
+                        <div 
+                            v-for="(banner, index) in bannersList" 
+                            :key="'circle-' + index"
+                            class="character-circle" 
+                            :class="['circle-' + (index + 1), { active: currentBannerIndex === index }]"
+                            :style="{ backgroundImage: `url(${banner.faceImage})` }"
+                            @click="switchBanner(index)"
+                        ></div>
+
+                        <div 
+                            v-for="(banner, index) in bannersList" 
+                            :key="'banner-' + index"
+                            class="banner-content"
+                            :class="{ active: currentBannerIndex === index }"
+                        >
+                            <div class="banner-image" :style="{ backgroundImage: `url(${banner.bannerImage})` }"></div>
+                        </div>
+
+                        <button class="about-btn"
+                            onclick="window.location.href='https://www.hoyolab.com/article/44512635'">
+                            About
+                        </button>
                     </div>
-                </div>
+                <!-- </div> -->
+                
+                <!-- Debugger -->
+                <!-- <div class="mt-4 text-muted small">
+                    Scroll Progress: {{ (scrollProgress * 100).toFixed(0) }}% | Active Index: {{ currentBannerIndex }}
+                </div> -->
             </div>
         </section>
 

@@ -7,9 +7,39 @@ body,
   width: 100%;
 }
 
+/* Smooth scrolling */
+html.lenis {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+/* Hide scrollbar natively */
+body::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Navbar */
 .glass-nav {
-  /* background-color: rgba(177, 208, 255, 0.3); */
   backdrop-filter: blur(10px);
 }
 .blur-transition-element {
@@ -73,11 +103,24 @@ body,
     height: 100%;
     object-fit: cover;
 }
-.scroll-text {
+.hero-title-container {
     position: absolute;
+    top: 73%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 10;
+    width: 100%;
+    pointer-events: none; /* Ensures the text doesn't block background interactions */
+}
+.text-shadow {
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+}
+.scroll-text {
+    /* position: absolute;
     bottom: 14%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%); */
     color: white;
     font-weight: bold;
     z-index: 10;
@@ -89,6 +132,116 @@ body,
     box-shadow: 0 0 25px 10px rgba(0, 0, 0, 0.4);
     white-space: nowrap;
 }
+.main-frame {
+    position: relative;
+    width: 80%;
+    aspect-ratio: 16 / 9;
+    border-radius: 32px;
+    background-color: var(--bg-color);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+@media (min-width: 1200px) {
+    .main-frame {
+        width: 60%;
+    }
+}
+@media (min-width: 1600px) {
+    .main-frame {
+        width: 50%;
+    }
+}
+.outer-frame {
+    --frame-color: #8ab4f8;
+    --outer-bg: #151a28;
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* width: 950px; */
+     /* Ensures it scales down on smaller screens */
+    /* height: 600px; */
+    height: 530px;
+    border: 2px solid rgba(138, 180, 248, 0.3);
+    border-radius: 32px;
+    background-color: var(--outer-bg);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.character-circle {
+    position: absolute;
+    left: -22px;
+    width: 44px;
+    height: 44px;
+    border: 2px solid var(--frame-color);
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    background-color: var(--frame-color);
+    z-index: 10;
+    cursor: pointer;
+    transition: transform 0.4s ease, border-color 0.4s, width 0.3s, height 0.3s, left 0.3s;
+}
+@media (min-width: 1200px) {
+    .character-circle {
+        width: 64px;
+        height: 64px;
+        left: -32px;
+    }
+}
+.circle-1 { top: 30%; }
+.circle-2 { top: 65%; }
+.character-circle.active {
+    transform: scale(1.5);
+    filter: grayscale(0%);
+    border-color: white;
+    box-shadow: 0 0 15px rgba(138, 180, 248, 0.6);
+}
+.banner-content {
+    position: absolute;
+    inset: 0; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0; 
+    visibility: hidden;
+    transition: opacity 0.6s ease-in-out;
+    border-radius: 22px;
+    overflow: hidden; 
+}
+.banner-content.active {
+    opacity: 1;
+    visibility: visible;
+}
+.banner-image {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    filter: brightness(1);
+    border-radius: inherit; 
+}
+
+@media (max-width: 768px) {
+    .main-frame {
+        width: 95%;
+        height: 400px;
+    }
+}
+.about-btn {
+    position: absolute;
+    bottom: 25px;
+    right: 25px;
+    background: rgba(11, 15, 25, 0.5);
+    backdrop-filter: blur(4px);
+    color: white;
+    border: 2px solid var(--frame-color);
+    border-radius: 20px;
+    padding: 8px 30px;
+    cursor: pointer;
+    z-index: 15;
+    transition: background 0.3s;
+}
+.about-btn:hover { background: rgba(138, 180, 248, 0.2); }
 .homepage-container {
     background-color: rgb(218, 239, 243);
 }
@@ -115,6 +268,17 @@ body,
 }
 .scroll-prompt:hover {
     transform: translateX(-50%) translateY(-10px);
+}
+.scroll-track {
+  height: 300vh;
+  position: relative;
+}
+.sticky-viewport {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
 }
 
 /* Player Dashboard */

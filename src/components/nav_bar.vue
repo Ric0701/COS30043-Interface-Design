@@ -44,7 +44,7 @@
             
             <RouterLink class="navbar-brand text-black fw-bold" to="/">
                 <img 
-                    src="../assests/lib/paimon-icon.png" 
+                    src="../assets/lib/paimon-icon.png" 
                     alt="User Icon" 
                     class="rounded-circle border shadow-sm" 
                     style="width: 40px; height: 40px; object-fit: cover; background-color: white; cursor: pointer;"
@@ -80,7 +80,7 @@
                                 @click.prevent="toggleUserDropdown"
                             >
                                 <img 
-                                    src="../assests/lib/account.png" 
+                                    src="../assets/lib/account.png" 
                                     alt="User Icon" 
                                     class="rounded-circle shadow-sm navbar-profile-icon"
                                 >
