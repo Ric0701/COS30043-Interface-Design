@@ -7,6 +7,10 @@ body,
   width: 100%;
 }
 
+.main-content-offset {
+  padding-top: 70px;
+}
+
 /* Smooth scrolling */
 html.lenis {
   height: auto;
@@ -134,32 +138,31 @@ body {
 }
 .main-frame {
     position: relative;
-    width: 80%;
+    width: 100%;
+    max-width: 80vw;
+    max-height: 65vh;
     aspect-ratio: 16 / 9;
+    margin: 0 auto;
     border-radius: 32px;
     background-color: var(--bg-color);
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 @media (min-width: 1200px) {
     .main-frame {
-        width: 60%;
+        width: 60vw;
     }
 }
 @media (min-width: 1600px) {
     .main-frame {
-        width: 50%;
+        width: 50vw;
     }
 }
 .outer-frame {
     --frame-color: #8ab4f8;
     --outer-bg: #151a28;
-    
     display: flex;
     justify-content: center;
     align-items: center;
-    /* width: 950px; */
-     /* Ensures it scales down on smaller screens */
-    /* height: 600px; */
     height: 530px;
     border: 2px solid rgba(138, 180, 248, 0.3);
     border-radius: 32px;
@@ -231,10 +234,10 @@ body {
     position: absolute;
     bottom: 25px;
     right: 25px;
-    background: rgba(11, 15, 25, 0.5);
+    background: rgba(219, 233, 255, 0.5);
     backdrop-filter: blur(4px);
     color: white;
-    border: 2px solid var(--frame-color);
+    border: 2px solid rgba(219, 233, 255, 0.5);
     border-radius: 20px;
     padding: 8px 30px;
     cursor: pointer;
@@ -255,7 +258,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.1); /* Subtle darkening for the video */
+    background: rgba(0, 0, 0, 0.1);
 }
 .scroll-prompt {
     position: absolute;
@@ -270,7 +273,7 @@ body {
     transform: translateX(-50%) translateY(-10px);
 }
 .scroll-track {
-  height: 300vh;
+  height: 200vh;
   position: relative;
 }
 .sticky-viewport {
@@ -368,7 +371,7 @@ body {
   color: white;
 }
 .custom-card {
-  background-color: #b1d0ff;
+  background-color: white;
   border: none;
   border-radius: 12px;
 }
@@ -378,8 +381,9 @@ body {
   color: white;
 }
 .summary-box {
-  background-color: #76acfd;
+  background-color: #b1d0ff;
   border-radius: 8px;
+  border: 1px solid rgb(151, 166, 235);
   padding: 15px;
 }
 

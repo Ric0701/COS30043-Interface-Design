@@ -7,12 +7,16 @@
     import { useRouter } from 'vue-router'
     import anime from 'animejs/lib/anime.es.js'
 
+    import { useAuthStore } from '../data/auth_store'
+
     import profile_1 from '../assets/lib/Linnea-Profile.png'
     import banner_1 from '../assets/lib/Linnea-Banner.webp'
     import profile_2 from '../assets/lib/Chascha-Profile.png'
     import banner_2 from '../assets/lib/Chascha-Banner.webp'
 
     const router = useRouter()
+
+    const authStore = useAuthStore()
 
     // Section 1: Banner Info
     const bannersList = [
@@ -209,7 +213,7 @@
         </section>
 
         <!-- 5. Call to Action Section -->
-        <section class="container py-5 text-center mb-5">
+        <section class="container py-5 text-center mb-5" v-if="!authStore.currentUser">
             <div class="py-5 px-4 rounded-4 shadow-lg bg-dark text-white">
                 <h2 class="display-5 fw-bold mb-3">Wanna be a member?</h2>
                 <p class="lead mb-4 text-white-50">Sync your pulls and plans across all your devices seamlessly.</p>

@@ -1,5 +1,5 @@
 <script setup>
-  import { onMounted, watch } from "vue";
+  import { onMounted, watch, computed } from "vue";
   import { RouterView, useRoute } from "vue-router";
   import nav_bar from "./components/nav_bar.vue";
   import footer_bar from "./components/footer.vue";
@@ -8,6 +8,8 @@
   import { useGachaStore } from "./gacha_store.js";
 
   const route = useRoute();
+
+  const isNotHomepage = computed(() => route.path !== "/");
 
   onMounted(async () => {
     useTodoStore().loadData();
@@ -44,7 +46,7 @@
 </script>
 
 <template>
-  <div class="d-flex flex-column min-vh-100">
+  <div class="d-flex flex-column min-vh-100" :class="{ 'main-content-offset': isNotHomepage }">
     <nav_bar />
 
     <RouterView />
