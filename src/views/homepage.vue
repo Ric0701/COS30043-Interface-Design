@@ -11,8 +11,8 @@
 
     import profile_1 from '../assets/lib/Linnea-Profile.png'
     import banner_1 from '../assets/lib/Linnea-Banner.webp'
-    import profile_2 from '../assets/lib/Chascha-Profile.png'
-    import banner_2 from '../assets/lib/Chascha-Banner.webp'
+    import profile_2 from '../assets/lib/Chasca-Profile.png'
+    import banner_2 from '../assets/lib/Chasca-Banner.webp'
 
     const router = useRouter()
 
@@ -163,10 +163,10 @@
                             <div class="banner-image" :style="{ backgroundImage: `url(${banner.bannerImage})` }"></div>
                         </div>
 
-                        <button class="about-btn"
-                            onclick="window.location.href='https://www.hoyolab.com/article/44512635'">
+                        <router-link class="about-btn"
+                            to="/character">
                             About
-                        </button>
+                        </router-link>
                     </div>
                 <!-- </div> -->
                 

@@ -58,7 +58,7 @@
 
             <div :class="['collapse', 'navbar-collapse', { show: isMenuOpen }]" id="navbarContent">
                 <div class="navbar-nav mx-auto">
-                    <RouterLink class="nav-link text-black" to="/" @click="isMenuOpen = false">Character</RouterLink>
+                    <RouterLink class="nav-link text-black" to="/character" @click="isMenuOpen = false">Character</RouterLink>
                     <RouterLink class="nav-link text-black" to="/calculator" @click="isMenuOpen = false">Calculator</RouterLink>
                     <RouterLink class="nav-link text-black" to="/wish-counter" @click="isMenuOpen = false">Wish Counter</RouterLink>
                     <RouterLink class="nav-link text-black" to="/todo-list" @click="isMenuOpen = false">Todo List</RouterLink>

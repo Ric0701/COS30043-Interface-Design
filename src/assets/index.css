@@ -284,6 +284,99 @@ body {
   overflow: hidden;
 }
 
+/* Current Banner Details */
+.banner-details-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  color: black;
+}
+.section-title {
+  text-align: center;
+  margin-bottom: 40px;
+}
+.character-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30px;
+}
+@media (max-width: 768px) {
+  .character-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.profile-image-details {
+  height: 100%;
+}
+.portrait-card {
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+.image-placeholder {
+  height: 400px;
+  background-color: #d7e7ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: black;
+}
+.card-content {
+  flex-grow: 1;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+.loading-state {
+  text-align: center;
+  padding: 40px 0;
+  color: #aaa;
+}
+.description-text {
+  line-height: 1.5;
+}
+.expanded-details {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #444;
+}
+.h3-character-name {
+  font-weight: bold;
+}
+.expanded-details h4 {
+  margin-bottom: 10px;
+  color: black;
+}
+.expanded-details ul {
+  color: black;
+  padding-left: 20px;
+}
+.pull-verdict {
+  margin-top: 20px;
+  padding: 12px;
+  background-color: rgba(177, 208, 255, 0.5);
+  border-radius: 8px;
+  border: 1px solid #444;
+}
+.toggle-button {
+  margin: 0 24px 24px 24px;
+  padding: 12px;
+  background-color: transparent;
+  color: #0d6efd;
+  border: 2px solid #0d6efd;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+.toggle-button:hover {
+  background-color: #0d6efd;
+  color: #fff;
+}
+
 /* Player Dashboard */
 .custom-dark-card {
   background-color: white;

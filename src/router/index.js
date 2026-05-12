@@ -7,6 +7,7 @@ import todo_list from '../views/todo_list.vue'
 import about from '../views/about.vue'
 import login from '../views/login.vue'
 import registration from '../views/registration.vue'
+import character from '../views/current_banner_details.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -15,6 +16,11 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: homepage
+    },
+    {
+      path: '/character',
+      name: 'character',
+      component: character
     },
     {
       path: '/player_dashboard',
