@@ -49,6 +49,22 @@ async function fetchSingleFile(url, outputFilename) {
     }
 }
 
+async function fetchCodesData(url, outputFilename) {
+    console.log(`\nFetching ${outputFilename} directly from ${url}...`);
+    
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to fetch codes data');
+        const data = await response.json();
+
+        const codesArray = data.codes ? data.codes : [];
+        
+        saveToFile(codesArray, outputFilename);
+    } catch (error) {
+        console.error(`Error building ${outputFilename}:`, error);
+    }
+}
+
 function saveToFile(data, outputFilename) {
     const outputDir = path.resolve(__dirname, '../public/data');
     if (!fs.existsSync(outputDir)){
@@ -67,6 +83,9 @@ async function buildDatabase() {
     
     // Weapons Data
     await fetchSingleFile('https://raw.githubusercontent.com/MadeBaruna/paimon-moe/refs/heads/main/src/data/weapons/en.json', 'weaponList.json');
+
+    // Redeem Codes Data
+    await fetchCodesData('https://hoyo-codes.seria.moe/codes?game=genshin', 'codes.json');
 }
 
 buildDatabase();
