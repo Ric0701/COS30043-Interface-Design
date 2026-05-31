@@ -5,6 +5,7 @@ export const useGachaStore = defineStore('gacha', {
     state: () => ({
         character_list: [],
         weapon_list: [],
+        codes_list: [],
         is_fetching_data: false,
 
         // Limited Banner Character
@@ -108,6 +109,17 @@ export const useGachaStore = defineStore('gacha', {
                 console.error("Database error:", error);
             } finally {
                 this.is_fetching_data = false;
+            }
+        },
+
+        async fetch_codes_data() {
+            if (this.codes_list.length > 0) return;
+            try {
+                const response = await fetch('/data/codes.json');
+                if (!response.ok) throw new Error("Failed to load codes database");
+                this.codes_list = await response.json();
+            } catch (error) {
+                console.error("Codes database error:", error);
             }
         },
 

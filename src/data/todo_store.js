@@ -33,6 +33,17 @@ export const useTodoStore = defineStore('todo', {
             // Filter out the task that matches the ID
             this.todos = this.todos.filter(task => task.id !== id)
             this.saveData()
+        },
+        /**
+         * Reorders the task array using splicing.
+         * Extracts the dragged item and inserts it at the target drop index.
+         * @param {number} oldIndex - The original position of the task
+         * @param {number} newIndex - The new position it was dropped at
+         */
+        reorderTodos(oldIndex, newIndex) {
+            const [movedItem] = this.todos.splice(oldIndex, 1)
+            this.todos.splice(newIndex, 0, movedItem)
+            this.saveData() // Instantly persist the new queue order to localStorage
         }
     },
     getters: {

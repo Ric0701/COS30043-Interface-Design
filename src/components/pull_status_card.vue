@@ -58,17 +58,7 @@ const addSinglePull = () => {
     }
 }
 
-// const addTenPulls = () => {
-//     for (let i = 0; i < 10; i++) {
-//         addSinglePull()
-//     }
-// }
-
 const showModal = ref(false);
-
-// const openModal = () => {
-//     showModal.value = true;
-// };
 
 const getLastTime = () => {
     const history = gacha_store[`${props.bannerType}_lifetime_pulls`]

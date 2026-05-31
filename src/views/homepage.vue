@@ -8,15 +8,17 @@
     import anime from 'animejs/lib/anime.es.js'
 
     import { useAuthStore } from '../data/auth_store'
+    import { useGachaStore } from '../gacha_store'
 
     import profile_1 from '../assets/lib/Linnea-Profile.png'
     import banner_1 from '../assets/lib/Linnea-Banner.webp'
     import profile_2 from '../assets/lib/Chasca-Profile.png'
     import banner_2 from '../assets/lib/Chasca-Banner.webp'
+    import copyIcon from '../assets/lib/copy.png'
 
     const router = useRouter()
-
     const authStore = useAuthStore()
+    const gachaStore = useGachaStore()
 
     // Section 1: Banner Info
     const bannersList = [
@@ -57,7 +59,10 @@
     }
 
     // Attach native scroll listener
-    onMounted(() => window.addEventListener('scroll', handleScroll))
+    onMounted(() => {
+        window.addEventListener('scroll', handleScroll)
+        gachaStore.fetch_codes_data()
+    })
     onUnmounted(() => window.removeEventListener('scroll', handleScroll))
 
     const currentBannerIndex = computed(() => {
@@ -79,11 +84,67 @@
         { title: 'Todo Planner', desc: 'Automatically aggregate all materials needed for your goals.', icon: 'bi-journal-check', link: '/todo-list' }
     ]
 
-    // Section 4: Mock Data for Codes
-    const activeCodes = ref([
-        { text: 'GENSHINGIFT', reward: '50 Primogems, 3 Hero\'s Wit' },
-        { text: 'WTKBM69V9S68', reward: '100 Primogems' }
-    ])
+    // Section 4: Reward Parsing & Display Helper Functions
+    const formatQuantity = (qtyStr) => {
+        const num = parseInt(qtyStr.replace(/,/g, ''), 10)
+        if (isNaN(num)) return qtyStr
+        return num.toLocaleString()
+    }
+
+    const parseRewards = (rewardsStr) => {
+        if (!rewardsStr) return []
+        
+        if (rewardsStr.includes('*')) {
+            return rewardsStr.split(';').map(part => {
+                const [name, qty] = part.split('*')
+                return {
+                    name: name.trim(),
+                    qty: formatQuantity(qty.trim())
+                }
+            })
+        }
+        
+        const lowerStr = rewardsStr.toLowerCase()
+        if (lowerStr.includes('60 primogems and five adventurer\'s experience')) {
+            return [
+                { name: 'Primogem', qty: '60' },
+                { name: 'Adventurer\'s Experience', qty: '5' }
+            ]
+        }
+        
+        return [{ name: rewardsStr, qty: '' }]
+    }
+
+    const getRewardIcon = (itemName) => {
+        const name = itemName.toLowerCase()
+        if (name.includes('primogem')) return '✨'
+        if (name.includes('mora')) return '🪙'
+        if (name.includes('warrant')) return '📜'
+        if (name.includes('torte') || name.includes('turnover') || name.includes('food')) return '🍰'
+        if (name.includes('experience') || name.includes('wit')) return '📕'
+        if (name.includes('adeptea')) return '🍵'
+        return '📦'
+    }
+
+    const getRewardStyle = (itemName) => {
+        const name = itemName.toLowerCase()
+        if (name.includes('primogem')) return { color: '#0d6efd', fontWeight: '600' }
+        if (name.includes('mora')) return { color: '#b8860b', fontWeight: '600' }
+        return { color: '#212529' }
+    }
+
+    const getCodeDate = (code) => {
+        const upperCode = code.toUpperCase()
+        const dateMap = {
+            'OHOHONICOLE': '05/19',
+            'NMI20MAJGIBP': '05/23',
+            'MAGENICOLESPUZZLE': '05/16',
+            'PSCA8NL4ZSPD': '04/28',
+            'G5HS7EMI47D0': '05/02',
+            'PFY1S40I88T9': '05/09'
+        }
+        return dateMap[upperCode] || '05/01'
+    }
 
     const copyCode = (code) => {
         navigator.clipboard.writeText(code)
@@ -198,16 +259,52 @@
         <section class="container py-5">
             <div class="card custom-dark-card p-4 shadow-sm border-0">
                 <h3 class="fw-bold mb-4"><i class="bi bi-gift-fill text-danger me-2"></i>Active Redeem Codes</h3>
-                <div class="row g-3">
-                    <div v-for="code in activeCodes" :key="code.text" class="col-12 col-md-6">
-                        <div class="p-3 border rounded d-flex justify-content-between align-items-center bg-white">
-                            <div>
-                                <span class="fw-bold text-dark fs-5">{{ code.text }}</span>
-                                <div class="small text-muted">{{ code.reward }}</div>
-                            </div>
-                            <button class="btn btn-sm btn-dark" @click="copyCode(code.text)">Copy</button>
-                        </div>
-                    </div>
+                <div class="table-responsive">
+                    <table class="table align-middle table-hover border">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col" style="width: 50%;">Redeem Codes</th>
+                                <th scope="col" style="width: 50%;">Rewards</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="item in gachaStore.codes_list" :key="item.id">
+                                <td>
+                                    <!-- Code container with copy button -->
+                                    <div class="d-flex align-items-center mb-2" style="max-width: 320px;">
+                                        <div class="form-control bg-light border text-dark fw-bold font-monospace py-1 px-3 flex-grow-1" style="height: auto; font-size: 1.1rem; line-height: 1.5; border-radius: 4px 0 0 4px;">
+                                            {{ item.code }}
+                                        </div>
+                                        <button class="btn btn-primary d-flex align-items-center justify-content-center py-2 px-3" style="border-radius: 0 4px 4px 0;" @click="copyCode(item.code)" title="Copy Code">
+                                            <img :src="copyIcon" alt="Copy" style="width: 20px; height: 20px;" />
+                                        </button>
+                                    </div>
+                                    <!-- Redeem Code Link -->
+                                    <div class="mb-1">
+                                        <a :href="`https://genshin.hoyoverse.com/en/gift?code=${item.code}`" target="_blank" class="text-decoration-none fw-bold text-primary small d-inline-flex align-items-center">
+                                            <i class="bi bi-play-fill me-1 text-primary"></i>Redeem Code Link
+                                        </a>
+                                    </div>
+                                    <!-- Date Added -->
+                                    <div class="text-muted small">
+                                        <span class="fw-bold">Date Added:</span> {{ getCodeDate(item.code) }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div v-if="parseRewards(item.rewards).length === 0" class="text-muted small">
+                                        No rewards specified
+                                    </div>
+                                    <div v-else>
+                                        <div v-for="(reward, index) in parseRewards(item.rewards)" :key="index" class="d-flex align-items-center mb-1">
+                                            <span class="me-2 fs-5">{{ getRewardIcon(reward.name) }}</span>
+                                            <span :style="getRewardStyle(reward.name)">{{ reward.name }}</span>
+                                            <span class="ms-1 fw-bold text-muted" v-if="reward.qty">x{{ reward.qty }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </section>

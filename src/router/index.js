@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import homepage from '../views/homepage.vue'
-import player_dashboard from '../views/player_dashboard.vue'
+// import player_dashboard from '../views/player_dashboard.vue'
 import wish_counter from '../views/wish_counter.vue'
 import calculator from '../views/calculator.vue'
 import todo_list from '../views/todo_list.vue'
@@ -8,6 +8,7 @@ import about from '../views/about.vue'
 import login from '../views/login.vue'
 import registration from '../views/registration.vue'
 import character from '../views/current_banner_details.vue'
+import account_setting from '../views/account_setting.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -22,11 +23,11 @@ const router = createRouter({
       name: 'character',
       component: character
     },
-    {
-      path: '/player_dashboard',
-      name: 'player_dashboard',
-      component: player_dashboard
-    },
+    // {
+    //   path: '/player_dashboard',
+    //   name: 'player_dashboard',
+    //   component: player_dashboard
+    // },
     {
       path: '/wish-counter',
       name: 'wish_counter',
@@ -56,6 +57,11 @@ const router = createRouter({
       path: '/registration',
       name: 'registration',
       component: registration
+    },
+    {
+      path: '/account_setting',
+      name: 'account_setting',
+      component: account_setting
     }
   ],
 })

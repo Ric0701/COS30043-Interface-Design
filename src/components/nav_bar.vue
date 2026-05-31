@@ -3,6 +3,7 @@
     import { onMounted, ref } from 'vue';
     import { RouterLink, useRouter } from 'vue-router';
     import { useAuthStore } from '../data/auth_store.js'
+    import PityProgressBar from './pity_progress_bar.vue';
 
     const isMenuOpen = ref(false);
     const isUserDropdownOpen = ref(false)
@@ -52,12 +53,14 @@
                 &nbsp; Genshin
             </RouterLink>
 
+            <PityProgressBar v-if="!isMenuOpen" mode="mobile" class="position-absolute start-50 translate-middle-x" />
+
             <button class="navbar-toggler" type="button" @click="toggleMenu" aria-controls="navbarContent" aria-expanded="isMenuOpen" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
             <div :class="['collapse', 'navbar-collapse', { show: isMenuOpen }]" id="navbarContent">
-                <div class="navbar-nav mx-auto">
+                <div class="navbar-nav mx-auto custom-nav-center">
                     <RouterLink class="nav-link text-black" to="/character" @click="isMenuOpen = false">Character</RouterLink>
                     <RouterLink class="nav-link text-black" to="/calculator" @click="isMenuOpen = false">Calculator</RouterLink>
                     <RouterLink class="nav-link text-black" to="/wish-counter" @click="isMenuOpen = false">Wish Counter</RouterLink>
@@ -66,8 +69,10 @@
                 </div>
                     
                 <div class="navbar-nav">
+                    <PityProgressBar mode="desktop" class="me-lg-3 my-2 my-lg-0" />
+                    
                     <template v-if="!authStore.currentUser">
-                        <RouterLink class="nav-link text-black" to="/login" @click="isMenuOpen = false">Login</RouterLink> 
+                        <RouterLink class="nav-link text-black py-0" to="/login" @click="isMenuOpen = false">Login</RouterLink> 
                     </template>
                     
                     <template v-else>
@@ -92,7 +97,7 @@
                                 :class="{ show: isUserDropdownOpen }" 
                             >
                                 <!-- Player Dashboard Link -->
-                                <li>
+                                <!-- <li>
                                     <RouterLink 
                                         to="/player_dashboard" 
                                         class="dropdown-item text-dark"
@@ -100,7 +105,7 @@
                                     >
                                         <i class="bi bi-gear me-2"></i> Your Dashboard
                                     </RouterLink>
-                                </li>
+                                </li> -->
                                 <li><hr class="dropdown-divider"></li>
                                 <!-- Account Setting Link -->
                                 <li>
@@ -130,3 +135,12 @@
         </div>
     </nav>
 </template>
+
+<style scoped>
+@media (min-width: 992px) {
+    .custom-nav-center {
+        margin-left: 22vw !important;
+        margin-right: auto !important;
+    }
+}
+</style>
