@@ -1,86 +1,135 @@
 import { defineStore } from "pinia";
-import { useAuthStore } from "./auth_store";
+import { useAuthStore } from "./auth_store.js";
+import { supabase } from "../services/supabase.js";
 
 export const useTodoStore = defineStore("todo", {
   state: () => ({
     todos: [],
   }),
   actions: {
-    loadData() {
+    async loadData() {
       const authStore = useAuthStore();
       if (!authStore.currentUser) {
         this.todos = [];
         return;
       }
-      const data = localStorage.getItem(`todos_${authStore.currentUser}`);
-      this.todos = data ? JSON.parse(data) : [];
-    },
-    saveData() {
-      const authStore = useAuthStore();
-      if (authStore.currentUser) {
-        localStorage.setItem(
-          `todos_${authStore.currentUser}`,
-          JSON.stringify(this.todos),
-        );
+      try {
+        const { data, error } = await supabase
+          .from("todos")
+          .select("*")
+          .eq("username", authStore.currentUser)
+          .order("position", { ascending: true });
+
+        if (error) throw error;
+        if (data) {
+          this.todos = data;
+        }
+      } catch (error) {
+        console.error("[Todo Store] Failed to load todos from Supabase:", error);
       }
     },
-    addTodo(item) {
-      // Assign a simple unique ID based on the current timestamp
-      this.todos.push({
+    async addTodo(item) {
+      const authStore = useAuthStore();
+      if (!authStore.currentUser) return;
+
+      const newTodo = {
         id: Date.now(),
-        ...item,
-      });
-      this.saveData();
+        username: authStore.currentUser,
+        text: item.text,
+        done: false,
+        mora: Number(item.mora) || 0,
+        items: item.items || [],
+        priority: item.priority || "low",
+        position: this.todos.length,
+      };
+
+      // Optimistic update
+      this.todos.push(newTodo);
+
+      try {
+        const { error } = await supabase.from("todos").insert([newTodo]);
+        if (error) throw error;
+      } catch (error) {
+        console.error("[Todo Store] Failed to add todo to Supabase:", error);
+      }
     },
-    removeTodo(id) {
-      // Filter out the task that matches the ID
+    async removeTodo(id) {
+      // Optimistic update
       this.todos = this.todos.filter((task) => task.id !== id);
-      this.saveData();
+
+      try {
+        const { error } = await supabase.from("todos").delete().eq("id", id);
+        if (error) throw error;
+      } catch (error) {
+        console.error("[Todo Store] Failed to delete todo from Supabase:", error);
+      }
     },
-    completeTodo(id) {
-      // Toggle the 'done' flag on a task by its ID
+    async completeTodo(id) {
       const task = this.todos.find((t) => t.id === id);
       if (task) {
+        // Toggle done status
         task.done = !task.done;
-        this.saveData();
+
+        try {
+          const { error } = await supabase
+            .from("todos")
+            .update({ done: task.done })
+            .eq("id", id);
+          if (error) throw error;
+        } catch (error) {
+          console.error(
+            "[Todo Store] Failed to update complete status in Supabase:",
+            error,
+          );
+        }
       }
     },
-    /**
-     * Reorders the task array using splicing.
-     * Extracts the dragged item and inserts it at the target drop index.
-     * @param {number} oldIndex - The original position of the task
-     * @param {number} newIndex - The new position it was dropped at
-     */
-    reorderTodos(oldIndex, newIndex) {
+    async reorderTodos(oldIndex, newIndex) {
+      // Reorder locally
       const [movedItem] = this.todos.splice(oldIndex, 1);
       this.todos.splice(newIndex, 0, movedItem);
-      this.saveData(); // Instantly persist the new queue order to localStorage
+
+      // Save updated order values back to Supabase
+      try {
+        const updates = this.todos.map((todo, index) => {
+          todo.position = index;
+          return supabase
+            .from("todos")
+            .update({ position: index })
+            .eq("id", todo.id);
+        });
+        await Promise.all(updates);
+      } catch (error) {
+        console.error(
+          "[Todo Store] Failed to persist new todo order to Supabase:",
+          error,
+        );
+      }
     },
   },
   getters: {
     summary(state) {
-      // Calculate the total Mora and combine identical items across all tasks
       let totalMora = 0;
       let itemSummary = {};
 
       state.todos.forEach((task) => {
-        totalMora += task.mora;
+        totalMora += Number(task.mora) || 0;
 
-        task.items.forEach((item) => {
-          if (item.count > 0) {
-            // If item doesn't exist in summary yet, add it
-            if (!itemSummary[item.name]) {
-              itemSummary[item.name] = { label: item.label, count: 0 };
+        if (Array.isArray(task.items)) {
+          task.items.forEach((item) => {
+            if (item && item.count > 0) {
+              if (!itemSummary[item.name]) {
+                itemSummary[item.name] = { label: item.label, count: 0 };
+              }
+              itemSummary[item.name].count += item.count;
             }
-            // Add the count to the total
-            itemSummary[item.name].count += item.count;
-          }
-        });
+          });
+        }
       });
 
       return {
         mora: totalMora,
-        items: Object.values(itemSummary), // Convert object back to an array for easy looping
+        items: Object.values(itemSummary),
       };
     },
   },

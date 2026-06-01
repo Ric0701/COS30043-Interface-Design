@@ -2,55 +2,117 @@ import { defineStore } from "pinia";
 import { useTodoStore } from "./todo_store.js";
 import { useGachaStore } from "../gacha_store.js";
 import { useGoalStore } from "./goal_store.js";
+import { supabase } from "../services/supabase.js";
 import CryptoJS from "crypto-js";
 
 function hashPassword(password) {
-  // CryptoJS executes SHA-256 purely in JavaScript, bypassing browser Secure Context blocks
   return CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex);
 }
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
-    users: JSON.parse(localStorage.getItem("genshin_users")) || [],
-    currentUser: localStorage.getItem("genshin_current_user") || null,
+    users: [],
+    currentUser: sessionStorage.getItem("genshin_current_user") || null,
   }),
   actions: {
-    async registerUser(username, password) {
+    async loadData() {
+      try {
+        const { data, error } = await supabase.from("profiles").select("*");
+        if (error) throw error;
+        if (data) {
+          // Normalize profiles property casing for compatibility
+          this.users = data.map((u) => ({
+            ...u,
+            displayName: u.display_name || u.displayName || "",
+            dateOfBirth: u.date_of_birth || u.dateOfBirth || "",
+          }));
+        }
+      } catch (error) {
+        console.error(
+          "[Auth Store] Failed to load profiles from Supabase:",
+          error,
+        );
+      }
+    },
+    async registerUser(username, password, dateOfBirth = "") {
       const userExists = this.users.find((u) => u.username === username);
 
       if (userExists) {
         return { success: false, message: "Username already exists." };
       }
 
+      const sanitizedDob = dateOfBirth ? dateOfBirth : null;
       const hashedPassword = await hashPassword(password);
+      const newProfile = {
+        username,
+        password: hashedPassword,
+        display_name: "",
+        date_of_birth: sanitizedDob,
+      };
 
-      this.users.push({ username, password: hashedPassword });
+      try {
+        const { error } = await supabase.from("profiles").insert([newProfile]);
+        if (error) throw error;
 
-      localStorage.setItem("genshin_users", JSON.stringify(this.users));
+        this.users.push({
+          username,
+          password: hashedPassword,
+          displayName: "",
+          dateOfBirth: dateOfBirth || "",
+          display_name: "",
+          date_of_birth: dateOfBirth || "",
+        });
 
-      return { success: true, message: "Registration successful!" };
+        return { success: true, message: "Registration successful!" };
+      } catch (error) {
+        console.error(
+          "[Auth Store] Failed to register user in Supabase:",
+          error,
+        );
+        return {
+          success: false,
+          message: `Registration failed: ${error.message}`,
+        };
+      }
     },
     async loginUser(username, password) {
       const hashedPassword = await hashPassword(password);
-      const user = this.users.find(
-        (u) => u.username === username && u.password === hashedPassword,
-      );
 
-      if (user) {
-        this.currentUser = username;
-        localStorage.setItem("genshin_current_user", username);
+      try {
+        const { data: user, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("username", username)
+          .eq("password", hashedPassword)
+          .maybeSingle();
 
-        useTodoStore().loadData();
-        useGachaStore().loadData();
-        useGoalStore().loadData();
+        if (error) throw error;
 
-        return { success: true, message: "Login successful!" };
+        if (user) {
+          this.currentUser = username;
+          sessionStorage.setItem("genshin_current_user", username);
+
+          // Populate local users list if empty
+          await this.loadData();
+
+          // Trigger hydration across other data stores
+          await Promise.all([
+            useTodoStore().loadData(),
+            useGachaStore().loadData(),
+            useGoalStore().loadData(),
+          ]);
+
+          return { success: true, message: "Login successful!" };
+        }
+        return { success: false, message: "Invalid username or password." };
+      } catch (error) {
+        console.error("[Auth Store] Login failed:", error);
+        return { success: false, message: `Login failed: ${error.message}` };
       }
-      return { success: false, message: "Invalid username or password." };
     },
     logout() {
       this.currentUser = null;
-      localStorage.removeItem("genshin_current_user");
+      sessionStorage.removeItem("genshin_current_user");
 
       useTodoStore().loadData();
       useGachaStore().loadData();
@@ -63,43 +125,83 @@ export const useAuthStore = defineStore("auth", {
       if (userIndex === -1)
         return { success: false, message: "User not found." };
 
-      if (newUsername !== this.currentUser) {
+      const oldUsername = this.currentUser;
+      const sanitizedDob = dateOfBirth ? dateOfBirth : null;
+
+      if (newUsername !== oldUsername) {
         const userExists = this.users.find((u) => u.username === newUsername);
         if (userExists) {
           return { success: false, message: "Username already exists." };
         }
 
-        // Migrate localStorage data
-        const oldUsername = this.currentUser;
+        try {
+          // Cascading updates manually to keep tables clean
+          await Promise.all([
+            supabase
+              .from("todos")
+              .update({ username: newUsername })
+              .eq("username", oldUsername),
+            supabase
+              .from("goals")
+              .update({ username: newUsername })
+              .eq("username", oldUsername),
+            supabase
+              .from("wishes")
+              .update({ username: newUsername })
+              .eq("username", oldUsername),
+          ]);
 
-        const gachaData = localStorage.getItem(`gacha_${oldUsername}`);
-        if (gachaData) {
-          localStorage.setItem(`gacha_${newUsername}`, gachaData);
-          localStorage.removeItem(`gacha_${oldUsername}`);
+          const { error } = await supabase
+            .from("profiles")
+            .update({
+              username: newUsername,
+              display_name: displayName,
+              date_of_birth: sanitizedDob,
+            })
+            .eq("username", oldUsername);
+
+          if (error) throw error;
+
+          this.currentUser = newUsername;
+          sessionStorage.setItem("genshin_current_user", newUsername);
+        } catch (error) {
+          console.error(
+            "[Auth Store] Failed to update profile username in database:",
+            error,
+          );
+          return {
+            success: false,
+            message: `Profile update failed: ${error.message}`,
+          };
         }
+      } else {
+        try {
+          const { error } = await supabase
+            .from("profiles")
+            .update({ display_name: displayName, date_of_birth: sanitizedDob })
+            .eq("username", oldUsername);
 
-        const todoData = localStorage.getItem(`todos_${oldUsername}`);
-        if (todoData) {
-          localStorage.setItem(`todos_${newUsername}`, todoData);
-          localStorage.removeItem(`todos_${oldUsername}`);
+          if (error) throw error;
+        } catch (error) {
+          console.error(
+            "[Auth Store] Failed to update profile columns in database:",
+            error,
+          );
+          return {
+            success: false,
+            message: `Profile update failed: ${error.message}`,
+          };
         }
-
-        const goalData = localStorage.getItem(`goals_${oldUsername}`);
-        if (goalData) {
-          localStorage.setItem(`goals_${newUsername}`, goalData);
-          localStorage.removeItem(`goals_${oldUsername}`);
-        }
-
-        // Update users list and state
-        this.users[userIndex].username = newUsername;
-        this.currentUser = newUsername;
-        localStorage.setItem("genshin_current_user", newUsername);
       }
 
       this.users[userIndex].displayName = displayName;
+      this.users[userIndex].display_name = displayName;
       this.users[userIndex].dateOfBirth = dateOfBirth;
+      this.users[userIndex].date_of_birth = dateOfBirth;
+      if (newUsername !== oldUsername) {
+        this.users[userIndex].username = newUsername;
+      }
 
-      localStorage.setItem("genshin_users", JSON.stringify(this.users));
       return { success: true, message: "Profile updated successfully!" };
     },
     async changePassword(currentPassword, newPassword) {
@@ -115,12 +217,29 @@ export const useAuthStore = defineStore("auth", {
       }
 
       const hashedNew = await hashPassword(newPassword);
-      this.users[userIndex].password = hashedNew;
 
-      localStorage.setItem("genshin_users", JSON.stringify(this.users));
-      return { success: true, message: "Password changed successfully!" };
+      try {
+        const { error } = await supabase
+          .from("profiles")
+          .update({ password: hashedNew })
+          .eq("username", this.currentUser);
+
+        if (error) throw error;
+
+        this.users[userIndex].password = hashedNew;
+        return { success: true, message: "Password changed successfully!" };
+      } catch (error) {
+        console.error(
+          "[Auth Store] Failed to change password in Supabase:",
+          error,
+        );
+        return {
+          success: false,
+          message: `Password change failed: ${error.message}`,
+        };
+      }
     },
-    deleteAccount() {
+    async deleteAccount() {
       const userIndex = this.users.findIndex(
         (u) => u.username === this.currentUser,
       );
@@ -129,25 +248,33 @@ export const useAuthStore = defineStore("auth", {
 
       const oldUsername = this.currentUser;
 
-      // Remove from list
-      this.users.splice(userIndex, 1);
+      try {
+        await Promise.all([
+          supabase.from("todos").delete().eq("username", oldUsername),
+          supabase.from("goals").delete().eq("username", oldUsername),
+          supabase.from("wishes").delete().eq("username", oldUsername),
+          supabase.from("profiles").delete().eq("username", oldUsername),
+        ]);
 
-      // Remove user specific data
-      localStorage.removeItem(`gacha_${oldUsername}`);
-      localStorage.removeItem(`todos_${oldUsername}`);
-      localStorage.removeItem(`goals_${oldUsername}`);
+        this.users.splice(userIndex, 1);
+        this.currentUser = null;
+        sessionStorage.removeItem("genshin_current_user");
 
-      // Log out
-      this.currentUser = null;
-      localStorage.removeItem("genshin_current_user");
-      localStorage.setItem("genshin_users", JSON.stringify(this.users));
+        useTodoStore().loadData();
+        useGachaStore().loadData();
+        useGoalStore().loadData();
 
-      // Reload stores to default states
-      useTodoStore().loadData();
-      useGachaStore().loadData();
-      useGoalStore().loadData();
-
-      return { success: true };
+        return { success: true };
+      } catch (error) {
+        console.error(
+          "[Auth Store] Failed to delete account in Supabase:",
+          error,
+        );
+        return {
+          success: false,
+          message: `Account deletion failed: ${error.message}`,
+        };
+      }
     },
   },
 });

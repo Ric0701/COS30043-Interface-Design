@@ -7,7 +7,7 @@ import todo_list from "../views/todo_list.vue";
 import about from "../views/about.vue";
 import login from "../views/login.vue";
 import registration from "../views/registration.vue";
-import character from "../views/current_banner_details.vue";
+import character from "../views/char_detail.vue";
 import account_setting from "../views/account_setting.vue";
 import goal_planner from "../views/goal_planner.vue";
 import wish_analytics from "../views/wish_analytics.vue";

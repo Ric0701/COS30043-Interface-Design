@@ -1,73 +1,86 @@
 import { defineStore } from "pinia";
 import { useAuthStore } from "./auth_store.js";
 import { useGachaStore } from "../gacha_store.js";
+import { supabase } from "../services/supabase.js";
 
 export const useGoalStore = defineStore("goal", {
   state: () => ({
     goals: [],
   }),
   actions: {
-    /**
-     * Loads goals from localStorage for the current authenticated user.
-     * Clears goals if no user is logged in.
-     */
-    loadData() {
+    async loadData() {
       const authStore = useAuthStore();
       if (!authStore.currentUser) {
         this.goals = [];
         return;
       }
-      const data = localStorage.getItem(`goals_${authStore.currentUser}`);
-      this.goals = data ? JSON.parse(data) : [];
-    },
+      try {
+        const { data, error } = await supabase
+          .from("goals")
+          .select("*")
+          .eq("username", authStore.currentUser);
 
-    /**
-     * Saves the current goals to localStorage for the active user.
-     */
-    saveData() {
+        if (error) throw error;
+        if (data) {
+          this.goals = data.sort((a, b) => a.id - b.id);
+        }
+      } catch (error) {
+        console.error("[Goal Store] Failed to load goals from Supabase:", error);
+      }
+    },
+    async addGoal({ goalName, targetWeek, pullType, neededWishes }) {
       const authStore = useAuthStore();
       if (!authStore.currentUser) return;
-      localStorage.setItem(
-        `goals_${authStore.currentUser}`,
-        JSON.stringify(this.goals),
-      );
-    },
 
-    /**
-     * Adds a new goal with the specified fields, assigns a unique ID, and persists the change.
-     */
-    addGoal({ goalName, targetWeek, pullType, neededWishes }) {
-      this.goals.push({
+      const newGoal = {
         id: Date.now(),
+        username: authStore.currentUser,
         goalName,
         targetWeek,
         pullType,
         neededWishes: Number(neededWishes) || 0,
-      });
-      this.saveData();
-    },
+      };
 
-    /**
-     * Deletes a goal by ID and persists the change.
-     */
-    removeGoal(id) {
-      this.goals = this.goals.filter((goal) => goal.id !== id);
-      this.saveData();
+      // Optimistic update
+      this.goals.push(newGoal);
+
+      try {
+        const { error } = await supabase.from("goals").insert([newGoal]);
+        if (error) throw error;
+      } catch (error) {
+        console.error("[Goal Store] Failed to add goal to Supabase:", error);
+      }
     },
-    updateGoal(id, patch) {
-      // Merge patch fields into the matching goal record
+    async removeGoal(id) {
+      // Optimistic update
+      this.goals = this.goals.filter((goal) => goal.id !== id);
+
+      try {
+        const { error } = await supabase.from("goals").delete().eq("id", id);
+        if (error) throw error;
+      } catch (error) {
+        console.error("[Goal Store] Failed to delete goal from Supabase:", error);
+      }
+    },
+    async updateGoal(id, patch) {
       const goal = this.goals.find((g) => g.id === id);
       if (goal) {
+        // Optimistic update
         Object.assign(goal, patch);
-        this.saveData();
+
+        try {
+          const { error } = await supabase
+            .from("goals")
+            .update(patch)
+            .eq("id", id);
+          if (error) throw error;
+        } catch (error) {
+          console.error("[Goal Store] Failed to update goal in Supabase:", error);
+        }
       }
     },
   },
   getters: {
-    /**
-     * Maps a pullType to the corresponding current pity level in the gacha store.
-     * Integrates existing Wish Counter and manual force edits reactively.
-     */
     getPityForPullType: () => {
       const gachaStore = useGachaStore();
       return (pullType) => {

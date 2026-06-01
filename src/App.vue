@@ -8,15 +8,20 @@ import ai_assistant_widget from "./components/ai_assistant_widget.vue";
 import { useTodoStore } from "./data/todo_store.js";
 import { useGachaStore } from "./gacha_store.js";
 import { useGoalStore } from "./data/goal_store.js";
+import { useAuthStore } from "./data/auth_store.js";
 
 const route = useRoute();
 
 const isNotHomepage = computed(() => route.path !== "/");
 
 onMounted(async () => {
-  useTodoStore().loadData();
-  useGachaStore().loadData();
-  useGoalStore().loadData();
+  const authStore = useAuthStore();
+  await authStore.loadData();
+  await Promise.all([
+    useTodoStore().loadData(),
+    useGachaStore().loadData(),
+    useGoalStore().loadData(),
+  ]);
 
   const { default: Lenis } =
     await import("https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/+esm");

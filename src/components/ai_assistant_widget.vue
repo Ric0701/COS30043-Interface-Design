@@ -13,7 +13,7 @@
 // =====================================================
 
 import { ref, nextTick } from "vue";
-import { callChatAI }   from "../services/ai_summarizer.js";
+import { callUnifiedAI } from "../services/ai_summarizer.js";
 import { useGachaStore } from "../gacha_store.js";
 import { useTodoStore }  from "../data/todo_store.js";
 import { useGoalStore }  from "../data/goal_store.js";
@@ -441,11 +441,17 @@ const handleMessageSubmit = async (messageText) => {
     { role: "user", content: messageText }
   ];
 
-  const result = await callChatAI({
-    messages,
-    tools:    TOOLS,
-    storeCtx: buildStoreContext()
-  });
+  let result = null;
+  try {
+    result = await callUnifiedAI({
+      messages,
+      tools:    TOOLS,
+      storeCtx: buildStoreContext(),
+      systemPrompt: SYSTEM_PROMPT
+    });
+  } catch (err) {
+    console.warn("[AI Service] callUnifiedAI failed:", err);
+  }
 
   isLoading.value = false;
 
