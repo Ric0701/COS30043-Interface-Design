@@ -3,6 +3,7 @@ import { onMounted, watch, computed } from "vue";
 import { RouterView, useRoute } from "vue-router";
 import nav_bar from "./components/nav_bar.vue";
 import footer_bar from "./components/footer.vue";
+import ai_assistant_widget from "./components/ai_assistant_widget.vue";
 
 import { useTodoStore } from "./data/todo_store.js";
 import { useGachaStore } from "./gacha_store.js";
@@ -61,5 +62,7 @@ watch(
     <RouterView />
 
     <footer_bar />
+
+    <ai_assistant_widget />
   </div>
 </template>

@@ -20,6 +20,21 @@ const isEditing = ref(false);
 const editFivePity = ref(0);
 const editFourPity = ref(0);
 
+const initialRarity = ref(null);
+const isMultiPull = ref(false);
+
+const openModalWithRarity = (r) => {
+  initialRarity.value = r;
+  isMultiPull.value = false;
+  showModal.value = true;
+};
+
+const openModalWithMulti = () => {
+  initialRarity.value = null;
+  isMultiPull.value = true;
+  showModal.value = true;
+};
+
 const toggleEdit = () => {
   isEditing.value = !isEditing.value;
   if (isEditing.value) {
@@ -49,6 +64,8 @@ const addSinglePull = () => {
     props.fourStarPity >= 9 ||
     props.fiveStarPity >= props.maxFiveStarPity - 1
   ) {
+    initialRarity.value = props.fiveStarPity >= props.maxFiveStarPity - 1 ? 5 : 4;
+    isMultiPull.value = false;
     showModal.value = true;
   } else {
     const now = new Date();
@@ -87,6 +104,9 @@ const handleModalAdd = (modalData) => {
   <AddPullModal
     v-if="showModal"
     :lastPullTime="getLastTime()"
+    :bannerType="bannerType"
+    :initialRarity="initialRarity"
+    :isMulti="isMultiPull"
     @skip="showModal = false"
     @add="handleModalAdd"
   />
@@ -149,7 +169,7 @@ const handleModalAdd = (modalData) => {
             <div class="col-6">
               <button
                 class="btn btn-outline-dark w-100"
-                @click="showModal = true"
+                @click="openModalWithRarity(5)"
               >
                 Get 5★
               </button>
@@ -157,7 +177,7 @@ const handleModalAdd = (modalData) => {
             <div class="col-6">
               <button
                 class="btn btn-outline-dark w-100"
-                @click="showModal = true"
+                @click="openModalWithRarity(4)"
               >
                 Get 4★
               </button>
@@ -172,7 +192,7 @@ const handleModalAdd = (modalData) => {
             <div class="col-4">
               <button
                 class="btn btn-outline-dark w-100"
-                @click="showModal = true"
+                @click="openModalWithMulti"
               >
                 +10
               </button>

@@ -54,6 +54,14 @@ export const useGoalStore = defineStore("goal", {
       this.goals = this.goals.filter((goal) => goal.id !== id);
       this.saveData();
     },
+    updateGoal(id, patch) {
+      // Merge patch fields into the matching goal record
+      const goal = this.goals.find((g) => g.id === id);
+      if (goal) {
+        Object.assign(goal, patch);
+        this.saveData();
+      }
+    },
   },
   getters: {
     /**

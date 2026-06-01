@@ -58,12 +58,19 @@
           </p>
         </div>
 
-        <!-- Navigation Links -->
+        <!-- Navigation Links — full site map -->
         <div class="col-12 col-md-4 text-center mb-4 mb-md-0">
-          <div class="d-flex justify-content-center gap-4">
-            <RouterLink to="/about" class="footer_footer-link">About Project</RouterLink>
-            <RouterLink to="/calculator" class="footer_footer-link">Calculator</RouterLink>
-            <RouterLink to="/wish-counter" class="footer_footer-link">Wish Counter</RouterLink>
+          <p class="text-white-50 small text-uppercase fw-semibold mb-2 footer_nav-heading">Quick Navigation</p>
+
+          <!-- Row 1: Core tools -->
+          <div class="footer_nav-grid">
+            <RouterLink to="/" class="footer_footer-link footer_nav-item">🏠 Home</RouterLink>
+            <RouterLink to="/calculator" class="footer_footer-link footer_nav-item">🧮 Calculator</RouterLink>
+            <RouterLink to="/wish-counter" class="footer_footer-link footer_nav-item">✨ Wish Counter</RouterLink>
+            <RouterLink to="/analytics" class="footer_footer-link footer_nav-item">📊 Analytics</RouterLink>
+            <RouterLink to="/todo-list" class="footer_footer-link footer_nav-item">📝 Todo List</RouterLink>
+            <RouterLink to="/planner" class="footer_footer-link footer_nav-item">🎯 Goal Planner</RouterLink>
+            <RouterLink to="/about" class="footer_footer-link footer_nav-item">ℹ️ About</RouterLink>
           </div>
         </div>
 

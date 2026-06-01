@@ -42,48 +42,6 @@ body {
   scrollbar-width: none;
 }
 
-/* Navbar */
-.glass-nav {
-  backdrop-filter: blur(10px);
-}
-.blur-transition-element {
-  filter: blur(10px);
-  opacity: 0;
-
-  /* Smooth transition for both blur and opacity */
-  transition:
-    filter 0.6s ease-out,
-    opacity 0.6s ease-out;
-
-  /* Ensure hardware acceleration for smooth performance */
-  will-change: filter, opacity;
-}
-.blur-transition-element.is-visible {
-  filter: blur(0px);
-  opacity: 1;
-  transform: none; /* Reset transform as requested */
-}
-.profile-dropdown {
-  background-color: white;
-  min-width: auto;
-  position: static;
-  float: none;
-  border: none;
-  width: fit-content;
-}
-@media (min-width: 900px) {
-  .profile-dropdown {
-    position: absolute;
-    right: 0;
-    left: auto;
-  }
-}
-.navbar-profile-icon {
-  width: 40px;
-  height: 40px;
-  object-fit: cover;
-  cursor: pointer;
-}
 
 /* Homepage */
 .homepage-wrapper {
@@ -608,6 +566,26 @@ body {
   transform: translateY(-4px);
 }
 
+/* ── Footer nav grid (7-link site map) ──────────────── */
+.footer_nav-heading {
+  letter-spacing: 0.08em;
+  font-size: 10.5px;
+}
+.footer_nav-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 20px;
+}
+.footer_nav-item {
+  font-size: 13px;
+  white-space: nowrap;
+  transition: color 0.25s ease, transform 0.2s ease, text-shadow 0.25s ease;
+}
+.footer_nav-item:hover {
+  transform: translateY(-2px) scale(1.04);
+}
+
 @keyframes footer_move-forever {
   0% {
    transform: translate3d(-90px,0,0);
@@ -617,9 +595,80 @@ body {
   }
 }
 
+/* ======================================================= */
+/* Account Settings (views/account_setting.vue)            */
+/* ======================================================= */
+
+/* Dark card variant exclusively for the Account Settings view.
+   Replaces the global .custom-dark-card (white background) so
+   white text, labels, and dark inputs are fully legible. */
+.account_setting_dark-card {
+  background-color: #1a1d21;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+}
+
 /* ========================================= */
-/* Navbar (components/nav_bar.vue)           */
+/* Add Pull Modal (views/add_pull_modal.vue) */
 /* ========================================= */
+.add_pull_modal_modal-overlay {
+  background: rgba(0, 0, 0, 0.7);
+}
+.add_pull_modal_pity-input {
+  width: 80px;
+}
+
+/* ========================================= */
+/* Navigation Bar (components/nav_bar.vue)   */
+/* ========================================= */
+.nav_bar_glass-nav {
+  backdrop-filter: blur(10px);
+}
+.nav_bar_blur-transition-element {
+  filter: blur(10px);
+  opacity: 0;
+  transition:
+    filter 0.6s ease-out,
+    opacity 0.6s ease-out;
+  will-change: filter, opacity;
+}
+.nav_bar_blur-transition-element.is-visible {
+  filter: blur(0px);
+  opacity: 1;
+  transform: none;
+}
+.nav_bar_profile-dropdown {
+  background-color: white;
+  min-width: auto;
+  position: static;
+  float: none;
+  border: none;
+  width: fit-content;
+}
+@media (min-width: 900px) {
+  .nav_bar_profile-dropdown {
+    position: absolute;
+    right: 0;
+    left: auto;
+  }
+}
+.nav_bar_navbar-profile-icon {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  cursor: pointer;
+}
+.nav_bar_logo-img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  background-color: white;
+  cursor: pointer;
+}
+.nav_bar_fixed-top {
+  z-index: 1060;
+}
 @media (min-width: 992px) {
   .nav_bar_navbar-collapse {
     display: flex !important;
@@ -836,4 +885,276 @@ body {
   background-color: #ebf8ff;
 }
 
+/* ======================================================= */
+/* Agentic AI Assistant (components/ai_assistant_widget.vue) */
+/* ======================================================= */
 
+/* ── Fixed anchor ────────────────────────────────────── */
+.ai_assistant_container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1090;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+/* ── FAB toggle button ───────────────────────────────── */
+.ai_assistant_fab {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  background: #0d6efd;
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(13, 110, 253, 0.45);
+  transition: background 0.2s ease, transform 0.2s ease;
+  flex-shrink: 0;
+}
+.ai_assistant_fab:hover {
+  background: #0b5ed7;
+  transform: scale(1.08);
+}
+.ai_assistant_fab--open {
+  background: #495057;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+/* ── Chat panel card ─────────────────────────────────── */
+.ai_assistant_panel {
+  width: 350px;
+  height: 500px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14);
+}
+
+/* ── Slide-up open/close transition ─────────────────── */
+.ai_assistant_slide-enter-active,
+.ai_assistant_slide-leave-active {
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+.ai_assistant_slide-enter-from,
+.ai_assistant_slide-leave-to {
+  opacity: 0;
+  transform: translateY(16px) scale(0.97);
+}
+
+/* ── Header bar ──────────────────────────────────────── */
+.ai_assistant_header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #0d6efd;
+  color: #fff;
+  flex-shrink: 0;
+}
+.ai_assistant_header__title {
+  font-weight: 700;
+  font-size: 14.5px;
+  letter-spacing: 0.01em;
+}
+.ai_assistant_header__close {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 16px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+}
+.ai_assistant_header__close:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ── Scrollable message area ─────────────────────────── */
+.ai_assistant_body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 14px 8px;
+  background: #f5f7fb;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── Message row alignment ───────────────────────────── */
+.ai_assistant_row {
+  display: flex;
+}
+.ai_assistant_row--user {
+  justify-content: flex-end;
+}
+.ai_assistant_row--assistant {
+  justify-content: flex-start;
+}
+
+/* ── Chat bubble base ────────────────────────────────── */
+.ai_assistant_bubble {
+  max-width: 82%;
+  padding: 9px 13px;
+  border-radius: 14px;
+  font-size: 13.5px;
+  line-height: 1.48;
+}
+.ai_assistant_bubble--user {
+  background: #0d6efd;
+  color: #fff;
+  border-bottom-right-radius: 3px;
+}
+.ai_assistant_bubble--assistant {
+  background: #fff;
+  color: #212529;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  border-bottom-left-radius: 3px;
+}
+.ai_assistant_bubble__text {
+  word-break: break-word;
+}
+.ai_assistant_bubble__time {
+  font-size: 10px;
+  margin-top: 5px;
+  opacity: 0.6;
+  text-align: right;
+}
+
+/* ── Animated typing indicator ───────────────────────── */
+.ai_assistant_typing {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 4px;
+}
+.ai_assistant_typing__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #adb5bd;
+  animation: ai_assistant_bounce 1.2s infinite ease-in-out;
+}
+.ai_assistant_typing__dot:nth-child(2) { animation-delay: 0.2s; }
+.ai_assistant_typing__dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes ai_assistant_bounce {
+  0%, 80%, 100% { transform: scale(0.75); opacity: 0.5; }
+  40%           { transform: scale(1.1);  opacity: 1;   }
+}
+
+/* ── Quick action chips ──────────────────────────────── */
+.ai_assistant_chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #fff;
+  border-top: 1px solid #edf0f5;
+  flex-shrink: 0;
+}
+.ai_assistant_chip {
+  font-size: 11.5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid #dee2e6;
+  background: #f8f9fa;
+  color: #495057;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  line-height: 1.4;
+}
+.ai_assistant_chip:hover {
+  background: #e9ecef;
+  border-color: #ced4da;
+}
+
+/* ── Input footer ────────────────────────────────────── */
+.ai_assistant_footer {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #fff;
+  border-top: 1px solid #edf0f5;
+  flex-shrink: 0;
+}
+.ai_assistant_input {
+  flex: 1;
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 13px;
+  outline: none;
+  color: #212529;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  min-width: 0;
+}
+.ai_assistant_input:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+}
+.ai_assistant_input:disabled {
+  background: #f8f9fa;
+  color: #adb5bd;
+  cursor: not-allowed;
+}
+.ai_assistant_send {
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: none;
+  background: #0d6efd;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.ai_assistant_send:hover:not(:disabled) {
+  background: #0b5ed7;
+}
+.ai_assistant_send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Mobile scaling (≤ 576 px) ───────────────────────── */
+@media (max-width: 576px) {
+  .ai_assistant_container {
+    bottom: 14px;
+    right: 14px;
+  }
+  .ai_assistant_panel {
+    width: calc(100vw - 28px);   /* near full-width on mobile */
+    max-width: 90vw;
+    height: 72vh;
+    max-height: 530px;
+  }
+  .ai_assistant_fab {
+    width: 46px;
+    height: 46px;
+    font-size: 20px;
+  }
+  .ai_assistant_bubble {
+    font-size: 13px;
+  }
+  .ai_assistant_chip {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+  .ai_assistant_header__title {
+    font-size: 13.5px;
+  }
+}

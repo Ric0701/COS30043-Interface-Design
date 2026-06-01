@@ -44,24 +44,16 @@ onMounted(() => {
 <template>
   <nav
     ref="elementRef"
-    class="navbar navbar-expand-lg glass-nav blur-transition-element fixed-top"
-    style="z-index: 1060"
+    class="navbar navbar-expand-lg nav_bar_glass-nav nav_bar_blur-transition-element nav_bar_fixed-top fixed-top"
   >
     <div class="container-fluid position-relative">
       <RouterLink class="navbar-brand text-black fw-bold" to="/">
         <img
           src="../assets/lib/paimon-icon.png"
           alt="User Icon"
-          class="rounded-circle border shadow-sm"
-          style="
-            width: 40px;
-            height: 40px;
-            object-fit: cover;
-            background-color: white;
-            cursor: pointer;
-          "
+          class="rounded-circle border shadow-sm nav_bar_logo-img"
         />
-        &nbsp; Genshin
+        <span class="d-none d-md-inline-block">&nbsp; Genshin</span>
       </RouterLink>
 
       <PityProgressBar
@@ -149,12 +141,12 @@ onMounted(() => {
                 <img
                   src="../assets/lib/account.png"
                   alt="User Icon"
-                  class="rounded-circle shadow-sm navbar-profile-icon"
+                  class="rounded-circle shadow-sm nav_bar_navbar-profile-icon"
                 />
               </a>
 
               <ul
-                class="dropdown-menu dropdown-menu-end mt-2 shadow profile-dropdown"
+                class="dropdown-menu dropdown-menu-end mt-2 shadow nav_bar_profile-dropdown"
                 :class="{ show: isUserDropdownOpen }"
               >
                 <li><hr class="dropdown-divider" /></li>

@@ -150,7 +150,7 @@ const handleDeleteAccount = () => {
       <div class="col-12 col-lg-8">
         <!-- Personal Info -->
         <div
-          class="card custom-dark-card p-4 shadow-sm border-0 mb-4 text-white"
+          class="card account_setting_dark-card p-4 shadow-sm border-0 mb-4 text-white"
         >
           <h3 class="fw-bold mb-3 text-white">
             <i class="bi bi-person-fill text-primary me-2"></i>Personal
@@ -216,7 +216,7 @@ const handleDeleteAccount = () => {
         </div>
 
         <!-- Password Change -->
-        <div class="card custom-dark-card p-4 shadow-sm border-0 text-white">
+        <div class="card account_setting_dark-card p-4 shadow-sm border-0 text-white">
           <h3 class="fw-bold mb-3 text-white">
             <i class="bi bi-shield-lock-fill text-warning me-2"></i>Change
             Password
@@ -288,7 +288,7 @@ const handleDeleteAccount = () => {
       <div class="col-12 col-lg-4">
         <!-- Data Management -->
         <div
-          class="card custom-dark-card p-4 shadow-sm border-0 mb-4 text-white"
+          class="card account_setting_dark-card p-4 shadow-sm border-0 mb-4 text-white"
         >
           <h3 class="fw-bold mb-3 text-white">
             <i class="bi bi-database-fill-slash text-danger me-2"></i>Data
@@ -316,7 +316,7 @@ const handleDeleteAccount = () => {
         </div>
 
         <!-- Session / Account Actions -->
-        <div class="card custom-dark-card p-4 shadow-sm border-0 text-white">
+        <div class="card account_setting_dark-card p-4 shadow-sm border-0 text-white">
           <h3 class="fw-bold mb-3 text-white">
             <i class="bi bi-gear-wide-connected text-secondary me-2"></i>Account
             Actions

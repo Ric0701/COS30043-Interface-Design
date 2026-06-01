@@ -37,6 +37,14 @@ export const useTodoStore = defineStore("todo", {
       this.todos = this.todos.filter((task) => task.id !== id);
       this.saveData();
     },
+    completeTodo(id) {
+      // Toggle the 'done' flag on a task by its ID
+      const task = this.todos.find((t) => t.id === id);
+      if (task) {
+        task.done = !task.done;
+        this.saveData();
+      }
+    },
     /**
      * Reorders the task array using splicing.
      * Extracts the dragged item and inserts it at the target drop index.
