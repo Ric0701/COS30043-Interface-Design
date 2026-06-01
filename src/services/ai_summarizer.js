@@ -2,25 +2,25 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(apiKey);
-const model = genAI.getGenerativeModel({ 
-    model: "gemini-2.5-flash",
-    tools: [{ googleSearch: {} }] 
+const model = genAI.getGenerativeModel({
+  model: "gemini-2.5-flash",
+  tools: [{ googleSearch: {} }],
 });
 
 // Helper to safely extract JSON and ignore extra text
 function extractJSON(text) {
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
-    } else {
-        throw new Error("AI did not return a valid JSON object.");
-    }
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (jsonMatch) {
+    return JSON.parse(jsonMatch[0]);
+  } else {
+    throw new Error("AI did not return a valid JSON object.");
+  }
 }
 
 export async function getCharacterSummary(characterName) {
-    if (!apiKey) throw new Error("Gemini API key is missing.");
+  if (!apiKey) throw new Error("Gemini API key is missing.");
 
-    const prompt = `
+  const prompt = `
         Perform a web search for the latest meta info on the Genshin Impact character "${characterName}".
         Return ONLY a JSON object. Do not include markdown.
         Schema:
@@ -32,13 +32,13 @@ export async function getCharacterSummary(characterName) {
             "worth_pulling": "string (Yes/No/Situational with a brief reason)"
         }
     `;
-    const result = await model.generateContent(prompt);
-    // return extractJSON(result.response.text());
+  const result = await model.generateContent(prompt);
+  // return extractJSON(result.response.text());
 
-    const rawText = result.response.text();
-    
-    // Output the raw text to the browser console for debugging
-    console.log(`[DEBUG] Raw AI Response for ${characterName}:`, rawText); 
-    
-    return extractJSON(rawText);
+  const rawText = result.response.text();
+
+  // Output the raw text to the browser console for debugging
+  console.log(`[DEBUG] Raw AI Response for ${characterName}:`, rawText);
+
+  return extractJSON(rawText);
 }
