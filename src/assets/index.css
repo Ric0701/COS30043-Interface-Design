@@ -345,6 +345,17 @@ body {
   color: #fff;
 }
 
+/* Homepage Call to Action Buttons Responsive Sizing */
+@media (max-width: 768px) {
+  .cta-btn {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+    font-size: 0.95rem !important;
+  }
+}
+
 /* Player Dashboard */
 .custom-dark-card {
   background-color: white;

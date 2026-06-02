@@ -389,13 +389,13 @@ onMounted(() => {
         </p>
         <div class="d-flex justify-content-center gap-3">
           <button
-            class="btn btn-primary btn-lg px-5 fw-bold"
+            class="btn btn-primary btn-lg px-5 fw-bold cta-btn"
             @click="router.push('/registration')"
           >
             Register
           </button>
           <button
-            class="btn btn-outline-light btn-lg px-5"
+            class="btn btn-outline-light btn-lg px-5 cta-btn"
             @click="router.push('/login')"
           >
             Sign In
