@@ -25,7 +25,7 @@ const banners = computed(() => [
     pity: gachaStore.limited_character_five_star_pity,
     max: 90,
     icon: characterIcon,
-    color: "#b8860b", // Dark gold to be readable on light background
+    color: "#b8860b",
   },
   {
     id: "weapon",
@@ -33,7 +33,7 @@ const banners = computed(() => [
     pity: gachaStore.limited_weapon_five_star_pity,
     max: 90,
     icon: weaponIcon,
-    color: "#0d6efd", // Blue
+    color: "#0d6efd",
   },
   {
     id: "standard",
@@ -41,7 +41,7 @@ const banners = computed(() => [
     pity: gachaStore.standard_five_star_pity,
     max: 90,
     icon: standardIcon,
-    color: "#6f42c1", // Purple
+    color: "#6f42c1",
   },
 ]);
 

@@ -49,7 +49,7 @@ body {
   width: 100%;
   height: calc(
     100vh - 56px
-  ); /* Adjust '56px' to match your navbar height exactly */
+  );
   overflow: hidden;
 }
 .intro-vid {
@@ -77,23 +77,18 @@ body {
   text-align: center;
   z-index: 10;
   width: 100%;
-  pointer-events: none; /* Ensures the text doesn't block background interactions */
+  pointer-events: none;
 }
 .text-shadow {
   text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
 }
 .scroll-text {
-  /* position: absolute;
-    bottom: 14%;
-    left: 50%;
-    transform: translateX(-50%); */
   color: white;
   font-weight: bold;
   z-index: 10;
-  /* text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); */
-  background: rgba(0, 0, 0, 0.3); /* Blurs the video pixels behind the box */
+  background: rgba(0, 0, 0, 0.3);
   -webkit-backdrop-filter: blur(10px);
-  padding: 5px; /* Space around the text */
+  padding: 5px;
   border-radius: 50px;
   box-shadow: 0 0 25px 10px rgba(0, 0, 0, 0.4);
   white-space: nowrap;
@@ -479,9 +474,6 @@ body {
   max-height: 100px;
 }
 .footer_parallax > use {
-  /* Wave movement mathematics for academic evaluation:
-     We animate the offset of the waves continuously to create a fluid, undulating effect.
-     Each path uses a different cycle period and offset to make the parallax layers feel random and realistic. */
   animation: footer_move-forever 25s cubic-bezier(.55,.5,.45,.5) infinite;
 }
 .footer_parallax > use:nth-child(1) {
@@ -566,7 +558,7 @@ body {
   transform: translateY(-4px);
 }
 
-/* ── Footer nav grid (7-link site map) ──────────────── */
+/* Footer nav grid */
 .footer_nav-heading {
   letter-spacing: 0.08em;
   font-size: 10.5px;
@@ -598,10 +590,6 @@ body {
 /* ======================================================= */
 /* Account Settings (views/account_setting.vue)            */
 /* ======================================================= */
-
-/* Dark card variant exclusively for the Account Settings view.
-   Replaces the global .custom-dark-card (white background) so
-   white text, labels, and dark inputs are fully legible. */
 .account_setting_dark-card {
   background-color: #1a1d21;
   border: none;
@@ -888,8 +876,6 @@ body {
 /* ======================================================= */
 /* Agentic AI Assistant (components/ai_assistant_widget.vue) */
 /* ======================================================= */
-
-/* ── Fixed anchor ────────────────────────────────────── */
 .ai_assistant_container {
   position: fixed;
   bottom: 24px;
@@ -900,8 +886,6 @@ body {
   align-items: flex-end;
   gap: 12px;
 }
-
-/* ── FAB toggle button ───────────────────────────────── */
 .ai_assistant_fab {
   width: 52px;
   height: 52px;
@@ -926,8 +910,6 @@ body {
   background: #495057;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
-
-/* ── Chat panel card ─────────────────────────────────── */
 .ai_assistant_panel {
   width: 350px;
   height: 500px;
@@ -939,8 +921,6 @@ body {
   border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14);
 }
-
-/* ── Slide-up open/close transition ─────────────────── */
 .ai_assistant_slide-enter-active,
 .ai_assistant_slide-leave-active {
   transition: opacity 0.22s ease, transform 0.22s ease;
@@ -950,8 +930,6 @@ body {
   opacity: 0;
   transform: translateY(16px) scale(0.97);
 }
-
-/* ── Header bar ──────────────────────────────────────── */
 .ai_assistant_header {
   display: flex;
   align-items: center;
@@ -981,8 +959,6 @@ body {
   color: #fff;
   background: rgba(255, 255, 255, 0.15);
 }
-
-/* ── Scrollable message area ─────────────────────────── */
 .ai_assistant_body {
   flex: 1;
   overflow-y: auto;
@@ -992,8 +968,6 @@ body {
   flex-direction: column;
   gap: 10px;
 }
-
-/* ── Message row alignment ───────────────────────────── */
 .ai_assistant_row {
   display: flex;
 }
@@ -1003,8 +977,6 @@ body {
 .ai_assistant_row--assistant {
   justify-content: flex-start;
 }
-
-/* ── Chat bubble base ────────────────────────────────── */
 .ai_assistant_bubble {
   max-width: 82%;
   padding: 9px 13px;
@@ -1032,8 +1004,6 @@ body {
   opacity: 0.6;
   text-align: right;
 }
-
-/* ── Animated typing indicator ───────────────────────── */
 .ai_assistant_typing {
   display: flex;
   align-items: center;
@@ -1053,8 +1023,6 @@ body {
   0%, 80%, 100% { transform: scale(0.75); opacity: 0.5; }
   40%           { transform: scale(1.1);  opacity: 1;   }
 }
-
-/* ── Quick action chips ──────────────────────────────── */
 .ai_assistant_chips {
   display: flex;
   flex-wrap: wrap;
@@ -1079,8 +1047,6 @@ body {
   background: #e9ecef;
   border-color: #ced4da;
 }
-
-/* ── Input footer ────────────────────────────────────── */
 .ai_assistant_footer {
   display: flex;
   gap: 8px;
@@ -1129,15 +1095,13 @@ body {
   opacity: 0.5;
   cursor: not-allowed;
 }
-
-/* ── Mobile scaling (≤ 576 px) ───────────────────────── */
 @media (max-width: 576px) {
   .ai_assistant_container {
     bottom: 14px;
     right: 14px;
   }
   .ai_assistant_panel {
-    width: calc(100vw - 28px);   /* near full-width on mobile */
+    width: calc(100vw - 28px);
     max-width: 90vw;
     height: 72vh;
     max-height: 530px;
@@ -1186,4 +1150,61 @@ body {
   .auth_glass-card {
     max-width: 90vw;
   }
+}
+
+/* ========================================= */
+/* About Page Premium Cards & Design System  */
+/* ========================================= */
+.about_gradient-text {
+  background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.about_glass-card {
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04) !important;
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.3s ease !important;
+}
+
+.about_glass-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 15px 35px rgba(13, 110, 253, 0.12) !important;
+  border-color: rgba(13, 110, 253, 0.3) !important;
+}
+
+.about_icon-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  background: rgba(13, 110, 253, 0.1);
+  color: #0d6efd;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.about_tech-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 30px;
+  background-color: rgba(13, 110, 253, 0.08);
+  color: #0d6efd;
+  border: 1px solid rgba(13, 110, 253, 0.15);
+}
+
+.about_tech-item {
+  transition: background-color 0.2s ease;
+}
+.about_tech-item:hover {
+  background-color: rgba(13, 110, 253, 0.05) !important;
 }

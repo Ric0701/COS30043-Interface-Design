@@ -18,8 +18,7 @@ const fetchCharacterData = async (name, dataRef, loadingRef) => {
     console.error(`Error loading ${name}:`, error);
     dataRef.value = {
       character_name: name,
-      // description: "Failed to load character data. Please refresh.",
-      description: `System Error: ${error.message}`, //temp error message for debugging
+      description: `System Error: ${error.message}`,
       strengths: [],
       important_details: "",
       worth_pulling: "",

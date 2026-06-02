@@ -5,28 +5,22 @@ import { useTodoStore } from "../data/todo_store.js";
 
 const todoStore = useTodoStore();
 
-// ---- Drag and Drop State Management ----
-// We track the index of the item currently being dragged, and the index
-// of the item we are dragging over, to provide reactive visual feedback.
+// Drag and Drop State Management
 const draggedIndex = ref(null);
 const dragOverIndex = ref(null);
 
 // Fired when the user begins dragging a task card
 const onDragStart = (event, index) => {
   draggedIndex.value = index;
-  // Use HTML5 dataTransfer to enable dragging natively and set move effect
   event.dataTransfer.effectAllowed = "move";
-  // Required for Firefox compatibility: set data on drag start
   event.dataTransfer.setData("text/plain", index);
 
-  // Add a class directly to the dragging node for a lowered opacity effect
   event.target.classList.add("todo_list_dragging-active");
 };
 
 // Fired continuously as the dragged item hovers over another item
 const onDragEnter = (event, index) => {
-  event.preventDefault(); // Necessary to allow dropping
-  // Update the reactive dragOverIndex only if hovering over a different element
+  event.preventDefault();
   if (draggedIndex.value !== index) {
     dragOverIndex.value = index;
   }
@@ -34,7 +28,6 @@ const onDragEnter = (event, index) => {
 
 // Fired continuously while hovering over a drop zone
 const onDragOver = (event) => {
-  // Prevent default browser behavior (which is to not allow dropping)
   event.preventDefault();
   event.dataTransfer.dropEffect = "move";
 };
@@ -42,7 +35,6 @@ const onDragOver = (event) => {
 // Fired when the dragged item is released over a valid drop target
 const onDrop = (event, index) => {
   event.preventDefault();
-  // If we dragged an item and dropped it on a different index, reorder in the store
   if (draggedIndex.value !== null && draggedIndex.value !== index) {
     todoStore.reorderTodos(draggedIndex.value, index);
   }
@@ -77,14 +69,12 @@ const onEnter = (el, done) => {
     translateY: 0,
     duration: 400,
     easing: "easeOutElastic(1, .8)",
-    complete: done, // Tell Vue the transition is finished
+    complete: done,
   });
 };
 
 // @leave hook: Called when an element is removed from the DOM
 const onLeave = (el, done) => {
-  // To allow the FLIP animation (.list-move) to work smoothly on remaining items,
-  // we must pull the leaving element out of the document flow using position: absolute.
   const { width, height } = el.getBoundingClientRect();
   el.style.position = "absolute";
   el.style.width = `${width}px`;
@@ -158,11 +148,6 @@ const onLeave = (el, done) => {
           <p class="text-black">Go to the Calculator to add resources here.</p>
         </div>
 
-        <!-- 
-                  Vue <transition-group> allows us to animate list insertions, removals, and reordering.
-                  We use the tag="div" to render it as a standard container.
-                  The JS hooks (@enter, @leave) wire up Anime.js to the lifecycle events.
-                -->
         <transition-group
           name="list"
           move-class="todo_list_list-move"

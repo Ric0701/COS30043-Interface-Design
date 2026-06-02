@@ -110,7 +110,7 @@ const TOOLS = [
     }
   },
 
-  // ── Tool 3: Manage a todo farming task ─────────────
+  // Tool 3: Manage a todo farming task 
   {
     name: "manage_todo_task",
     description:
@@ -145,7 +145,7 @@ const TOOLS = [
     }
   },
 
-  // ── Tool 4: Manage a savings goal ──────────────────
+  // Tool 4: Manage a savings goal 
   {
     name: "manage_planner_goal",
     description:
@@ -235,7 +235,7 @@ const getSystemPrompt = () => {
   const weaponList = (gachaStore.weapon_list || []).map(w => w.name);
 
   return [
-    "You are Paimon, a helpful, deeply knowledgeable Genshin Impact companion. Always act as an interactive, immersive wiki. Keep your tone friendly and supportive, but slightly less hyperactive/enthusiastic than usual.",
+    "You are Paimon, a helpful, deeply knowledgeable Genshin Impact companion. Always act as an interactive, immersive wiki. Keep your tone friendly and supportive, but slightly hyperactive/enthusiastic.",
     "Always reply in plain sentences — no markdown asterisks, bullet dashes, or code fences.",
     "When the user asks about a character, lore, or gameplay mechanics, DO NOT give brief one-sentence answers and DO NOT reject the question. You must elaborate comprehensively in multiple sentences, giving rich descriptions and details.",
     `User Logged In: ${authStore.currentUser ? 'Yes (' + authStore.currentUser + ')' : 'No'}.`,
@@ -604,7 +604,7 @@ const toggleChat = () => {
   if (isOpen.value) scrollToBottom();
 };
 
-// ─── Helpers ──────────────────────────────────────────
+// Helpers
 function ts() {
   return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
@@ -620,7 +620,7 @@ const scrollToBottom = async () => {
 <template>
   <div class="ai_assistant_container">
 
-    <!-- ── FAB Toggle ────────────────────────────────── -->
+    <!-- FAB Toggle -->
     <button
       class="ai_assistant_fab"
       :class="{ 'ai_assistant_fab--open': isOpen }"
@@ -631,7 +631,7 @@ const scrollToBottom = async () => {
       <span aria-hidden="true">{{ isOpen ? '✕' : '💬' }}</span>
     </button>
 
-    <!-- ── Chat Panel ────────────────────────────────── -->
+    <!-- Chat Panel -->
     <Transition name="ai_assistant_slide">
       <div v-if="isOpen" class="ai_assistant_panel" role="dialog" aria-label="Paimon AI Assistant">
 

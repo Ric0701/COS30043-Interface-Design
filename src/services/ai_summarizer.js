@@ -16,25 +16,13 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 // Declared first so the key resolution block below can reference it.
 const isActiveKey = (k) => k && k.length > 10 && !k.startsWith("YOUR_");
 
-// =====================================================
-// DEVELOPER: API KEY CONFIGURATION
-// You have TWO ways to provide your API keys:
-//
-// Option A — Hardcode here (easiest for local dev):
-//   Paste your real key as the value for each slot below.
-//   Leave a slot as "YOUR_GEMINI_KEY_x" to skip it.
-//
-// Option B — Use .env (more secure):
-//   Set VITE_GEMINI_API_KEY, VITE_GEMINI_KEY_2, etc. in .env
-//   and restart the dev server. Env values override these if set.
-// =====================================================
 const _HARDCODED_KEYS = {
-  gemini_1:   "YOUR_GEMINI_KEY_1",    // ← paste your primary Gemini key here
-  gemini_2:   "YOUR_GEMINI_KEY_2",    // ← paste a second Gemini key for failover
-  gemini_3:   "YOUR_GEMINI_KEY_3",    // ← paste a third Gemini key for failover
-  gemini_4:   "YOUR_GEMINI_KEY_4",    // ← paste a fourth Gemini key for failover
-  gemini_5:   "YOUR_GEMINI_KEY_5",    // ← paste a fifth Gemini key for failover
-  openrouter: "YOUR_OPENROUTER_KEY"   // ← paste your OpenRouter key here
+  gemini_1:   "YOUR_GEMINI_KEY_1",
+  gemini_2:   "YOUR_GEMINI_KEY_2",
+  gemini_3:   "YOUR_GEMINI_KEY_3",
+  gemini_4:   "YOUR_GEMINI_KEY_4",
+  gemini_5:   "YOUR_GEMINI_KEY_5",
+  openrouter: "YOUR_OPENROUTER_KEY"
 };
 
 // Resolve a key: env var takes priority; fall back to hardcoded slot
@@ -56,7 +44,7 @@ const GEMINI_REST_URL = "https://generativelanguage.googleapis.com/v1beta/models
 // Centralised session cache for character summaries
 export const characterCache = new Map();
 
-// ─── Helper: safely pull JSON out of a raw text response ─
+// Helper: safely pull JSON out of a raw text response ─
 export function extractJSON(text) {
   const match = text.match(/\{[\s\S]*\}/);
   if (match) return JSON.parse(match[0]);

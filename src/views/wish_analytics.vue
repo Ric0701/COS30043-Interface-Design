@@ -94,7 +94,7 @@ const activeTooltipIndex = ref(null);
 
 // --- Category Donut SVG parameters ---
 const donutRadius = 60;
-const donutCircumference = 2 * Math.PI * donutRadius; // ~376.991
+const donutCircumference = 2 * Math.PI * donutRadius;
 
 const donutSegments = computed(() => {
   const cats = categories.value;

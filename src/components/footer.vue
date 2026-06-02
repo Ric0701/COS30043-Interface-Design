@@ -1,6 +1,5 @@
 <template>
   <footer class="footer_custom-footer">
-    <!-- SVG Wave Divider -->
     <div class="footer_wave-container">
       <svg
         class="footer_waves"

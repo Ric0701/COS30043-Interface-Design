@@ -5,8 +5,6 @@ import { weapon_exp } from "../data/weapon_exp.js";
 import { useTodoStore } from "../data/todo_store.js";
 import { useGachaStore } from "../gacha_store.js";
 
-// import { characterList, weaponList } from '../data/entity_list.js'
-
 const todoStore = useTodoStore();
 const gachaStore = useGachaStore();
 const calcType = ref("character");
