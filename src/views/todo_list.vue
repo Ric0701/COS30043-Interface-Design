@@ -196,7 +196,7 @@ const onLeave = (el, done) => {
                   <i class="bi bi-grip-vertical fs-4"></i>
                 </div>
                 <div>
-                  <h4 class="fw-bold mb-0 text-black">{{ task.name }}</h4>
+                  <h4 class="fw-bold mb-0 text-black">{{ task.task_name }}</h4>
                   <span class="text-black small"
                     >Level {{ task.currentLevel }} →
                     {{ task.targetLevel }}</span

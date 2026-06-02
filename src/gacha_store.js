@@ -8,6 +8,7 @@ export const useGachaStore = defineStore("gacha", {
     weapon_list: [],
     codes_list: [],
     is_fetching_data: false,
+    calculatorTarget: null,
 
     // Limited Banner Character
     limited_character_lifetime_pulls: [],
@@ -51,18 +52,27 @@ export const useGachaStore = defineStore("gacha", {
       try {
         const { data: wishesData, error: wishesError } = await supabase
           .from("wishes")
-          .select("*")
-          .eq("username", authStore.currentUser);
+          .select("*");
 
         if (wishesError) throw wishesError;
         if (wishesData) {
-          this.limited_character_lifetime_pulls = wishesData
+          const mappedWishes = wishesData.map(w => ({
+            id: w.id,
+            type: w.banner_type,
+            name: w.item_name,
+            rarity: Number(w.rarity) || 3,
+            pity: Number(w.pity) || 1,
+            timestamp: new Date(w.created_at).getTime(),
+            time: w.created_at,
+          }));
+
+          this.limited_character_lifetime_pulls = mappedWishes
             .filter((w) => w.type === "limited_character")
             .sort((a, b) => a.timestamp - b.timestamp);
-          this.limited_weapon_lifetime_pulls = wishesData
+          this.limited_weapon_lifetime_pulls = mappedWishes
             .filter((w) => w.type === "limited_weapon")
             .sort((a, b) => a.timestamp - b.timestamp);
-          this.standard_lifetime_pulls = wishesData
+          this.standard_lifetime_pulls = mappedWishes
             .filter((w) => w.type === "standard")
             .sort((a, b) => a.timestamp - b.timestamp);
         }
@@ -201,6 +211,9 @@ export const useGachaStore = defineStore("gacha", {
       const type = item.type;
       const rarity = item.rarity;
 
+      const uuid = crypto.randomUUID();
+      item.id = uuid;
+
       item.previous_five_star_pity = this[`${type}_five_star_pity`];
       item.previous_four_star_pity = this[`${type}_four_star_pity`];
 
@@ -221,16 +234,12 @@ export const useGachaStore = defineStore("gacha", {
       const authStore = useAuthStore();
       if (authStore.currentUser) {
         const dbPull = {
-          id: item.timestamp || Date.now(),
-          username: authStore.currentUser,
-          type: type,
-          name: item.name || "Unknown",
-          rarity: rarity,
-          timestamp: item.timestamp || Date.now(),
-          time: item.time || new Date().toISOString(),
-          pity: item.pity || null,
-          previous_five_star_pity: item.previous_five_star_pity,
-          previous_four_star_pity: item.previous_four_star_pity,
+          id: uuid,
+          banner_type: type,
+          item_name: item.name || "Unknown",
+          rarity: Number(rarity) || 3,
+          pity: Number(item.pity) || 1,
+          created_at: item.time || new Date().toISOString(),
         };
 
         try {
@@ -271,9 +280,7 @@ export const useGachaStore = defineStore("gacha", {
           const { error } = await supabase
             .from("wishes")
             .delete()
-            .eq("username", authStore.currentUser)
-            .eq("type", type)
-            .eq("timestamp", poppedItem.timestamp);
+            .eq("id", poppedItem.id);
 
           if (error) throw error;
         } catch (error) {
@@ -309,7 +316,9 @@ export const useGachaStore = defineStore("gacha", {
           const time = new Date(timestamp - now.getTimezoneOffset() * 60000)
             .toISOString()
             .slice(0, 16);
+          const uuid = crypto.randomUUID();
           const item = {
+            id: uuid,
             type: type,
             name: "Unknown (Historical)",
             rarity: 3,
@@ -320,13 +329,12 @@ export const useGachaStore = defineStore("gacha", {
 
           if (authStore.currentUser) {
             placeholderPulls.push({
-              id: timestamp,
-              username: authStore.currentUser,
-              type: type,
-              name: "Unknown (Historical)",
+              id: uuid,
+              banner_type: type,
+              item_name: "Unknown (Historical)",
               rarity: 3,
-              timestamp: timestamp,
-              time: time,
+              pity: 1,
+              created_at: new Date(timestamp).toISOString(),
             });
           }
         }
@@ -387,12 +395,12 @@ export const useGachaStore = defineStore("gacha", {
 
       const authStore = useAuthStore();
       if (authStore.currentUser) {
-        // Clear all previous wishes in database for user
+        // Clear all previous wishes in database
         try {
           const { error } = await supabase
             .from("wishes")
             .delete()
-            .eq("username", authStore.currentUser);
+            .neq("id", "00000000-0000-0000-0000-000000000000");
           if (error) throw error;
         } catch (error) {
           console.error(
@@ -406,6 +414,10 @@ export const useGachaStore = defineStore("gacha", {
       const addPullLocal = (item) => {
         const type = item.type;
         const rarity = item.rarity;
+        
+        const uuid = crypto.randomUUID();
+        item.id = uuid;
+
         item.previous_five_star_pity = this[`${type}_five_star_pity`];
         item.previous_four_star_pity = this[`${type}_four_star_pity`];
 
@@ -424,16 +436,12 @@ export const useGachaStore = defineStore("gacha", {
 
         if (authStore.currentUser) {
           dbPulls.push({
-            id: item.timestamp || Date.now() + dbPulls.length,
-            username: authStore.currentUser,
-            type: type,
-            name: item.name || "Unknown",
+            id: uuid,
+            banner_type: type,
+            item_name: item.name || "Unknown",
             rarity: rarity,
-            timestamp: item.timestamp || Date.now() + dbPulls.length,
-            time: item.time || new Date().toISOString(),
             pity: item.pity || null,
-            previous_five_star_pity: item.previous_five_star_pity,
-            previous_four_star_pity: item.previous_four_star_pity,
+            created_at: item.time || new Date().toISOString(),
           });
         }
       };

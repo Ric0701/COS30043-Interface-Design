@@ -27,13 +27,8 @@ const handleLogin = async () => {
 </script>
 
 <template>
-  <div
-    class="container-fluid d-flex min-vh-100 flex-column justify-content-center align-items-center"
-  >
-    <div
-      class="card custom-dark-card p-4 shadow"
-      style="width: 100%; max-width: 400px"
-    >
+  <div class="auth_wallpaper-container d-flex justify-content-center align-items-center">
+    <div class="card auth_glass-card p-4 shadow">
       <h2 class="fw-bold mb-4 text-dark text-center">Login</h2>
 
       <form @submit.prevent="handleLogin">

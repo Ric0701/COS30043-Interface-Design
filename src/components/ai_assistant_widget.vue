@@ -13,11 +13,15 @@
 // =====================================================
 
 import { ref, nextTick } from "vue";
+import { useRouter } from "vue-router";
 import { callUnifiedAI } from "../services/ai_summarizer.js";
+import { useAuthStore } from "../data/auth_store.js";
 import { useGachaStore } from "../gacha_store.js";
 import { useTodoStore }  from "../data/todo_store.js";
 import { useGoalStore }  from "../data/goal_store.js";
 
+const router = useRouter();
+const authStore = useAuthStore();
 const gachaStore = useGachaStore();
 const todoStore  = useTodoStore();
 const goalStore  = useGoalStore();
@@ -73,7 +77,7 @@ const TOOLS = [
           description: "The pull number (pity counter value) at which the item was obtained"
         }
       },
-      required: ["banner_type", "character_or_weapon_name", "rarity", "pity"]
+      required: ["character_or_weapon_name", "pity"]
     }
   },
 
@@ -181,6 +185,42 @@ const TOOLS = [
       },
       required: ["action"]
     }
+  },
+  {
+    name: "Maps_application",
+    description: "Navigates the user to a different view or page in the application. Use this when the user asks to go to, visit, open, or view a page like the calculator, wish counter, analytics, checklist, planner, account, or settings. Examples: 'Take me to the calculator', 'Bring me to my account settings', 'Go to the planner'.",
+    parameters: {
+      type: "object",
+      properties: {
+        target_route: {
+          type: "string",
+          description: "The destination path: '/calculator', '/wish-counter', '/wish-analytics', '/todo-list', '/planner', '/account_setting', or '/'."
+        }
+      },
+      required: ["target_route"]
+    }
+  },
+  {
+    name: "setup_calculator",
+    description: "Selects a character or weapon in the calculator view and displays required materials. Use this when the user wants to calculate resources, levels, or materials for a specific character or weapon. Examples: 'Calculate resources for Nahida', 'Add calculation for Chasca', 'Check materials for Staff of Homa'.",
+    parameters: {
+      type: "object",
+      properties: {
+        item_name: {
+          type: "string",
+          description: "Exact name of the character or weapon to set up in the calculator."
+        },
+        current_level: {
+          type: "number",
+          description: "Optional current level of the character or weapon."
+        },
+        target_level: {
+          type: "number",
+          description: "Optional target level of the character or weapon."
+        }
+      },
+      required: ["item_name"]
+    }
   }
 ];
 
@@ -190,31 +230,44 @@ const TOOLS = [
 // Contains strict disambiguation rules so the LLM
 // selects the correct tool for every intent.
 // =====================================================
-const SYSTEM_PROMPT = [
-  "You are Paimon, an enthusiastic and precise Genshin Impact assistant.",
-  "Always reply in plain sentences — no markdown asterisks, bullet dashes, or code fences.",
+const getSystemPrompt = () => {
+  const characterList = (gachaStore.character_list || []).map(c => c.name);
+  const weaponList = (gachaStore.weapon_list || []).map(w => w.name);
 
-  // ── Tool inventory ─────────────────────────────────
-  "You have four tools: log_gacha_pull, configure_pity_counters, manage_todo_task, manage_planner_goal.",
-  "Always prefer calling a tool over a text reply when an action is clearly requested.",
-  "Use the data context to resolve task_id or goal_id when the user refers to an existing item by name.",
+  return [
+    "You are Paimon, a helpful, deeply knowledgeable Genshin Impact companion. Always act as an interactive, immersive wiki. Keep your tone friendly and supportive, but slightly less hyperactive/enthusiastic than usual.",
+    "Always reply in plain sentences — no markdown asterisks, bullet dashes, or code fences.",
+    "When the user asks about a character, lore, or gameplay mechanics, DO NOT give brief one-sentence answers and DO NOT reject the question. You must elaborate comprehensively in multiple sentences, giving rich descriptions and details.",
+    `User Logged In: ${authStore.currentUser ? 'Yes (' + authStore.currentUser + ')' : 'No'}.`,
+    `Context: The recognized characters in the database are: ${characterList.join(', ')}. The recognized weapons are: ${weaponList.join(', ')}.`,
+    "Use the provided lists of recognized characters and weapons to validate user requests. If a user asks about an entity not on these lists, inform them it is not currently tracked in the database.",
+    "You have six tools: log_gacha_pull, configure_pity_counters, manage_todo_task, manage_planner_goal, Maps_application, setup_calculator.",
+    "Always prefer calling a tool over a text reply when an action is clearly requested.",
+    "CRITICAL TOOL RULE: If the user requests an action (like logging a wish or calculating resources) but fails to provide REQUIRED parameters (like rarity, banner type, or character name), YOU MUST NOT attempt to call the JSON tool. Instead, respond with standard text. Explicitly state which specific pieces of information you are missing and ask the user to provide them.",
+    
+    // ── Navigation rule ──────────────────────────────
+    "If the user asks to navigate to a protected route (like Dashboard, Planner, or Account settings) but they are NOT logged in, call Maps_application with target_route: '/login'. In this case, DO NOT just give a short error. Reply with a highly detailed, friendly multi-sentence explanation about why they cannot go there (to protect their private account data and setup) and tell them exactly what to do next (sign in or sign up).",
+    
+    // ── Tool execution rule ──────────────────────────
+    "TOOL SELECTION RULE — NAVIGATION & CALCULATOR:",
+    "  - If the user wants to navigate or open a page (e.g. calculator, planner, checklist, account settings), call Maps_application with the target route.",
+    "  - If the user wants to calculate level or ascension resources for a character or weapon, call setup_calculator with the name.",
 
-  // ── CRITICAL: Pity disambiguation ──────────────────
-  // This is the most common mistake: confusing current pity state vs a completed pull.
-  "TOOL SELECTION RULE — PITY STATE vs PULL EVENT:",
-  "  (A) If the user describes their CURRENT pity (e.g. 'I am at 57 pity', 'my pity is 57', 'I haven't gotten a 5-star and I'm at 57') — call configure_pity_counters. Do NOT call log_gacha_pull. The user did not obtain an item; they are reporting their counter.",
-  "  (B) If the user describes a COMPLETED pull (e.g. 'I got Neuvillette at 57 pity', 'I pulled Furina', 'add Chasca to my banner at 43 pity') — call log_gacha_pull.",
+    // ── Tool 1 & 2 pity rule ──────────────────────────
+    "TOOL SELECTION RULE — PITY STATE vs PULL EVENT:",
+    "  (A) If the user describes their CURRENT pity (e.g. 'I am at 57 pity', 'my pity is 57', 'I haven't gotten a 5-star and I'm at 57') — call configure_pity_counters. Do NOT call log_gacha_pull. The user did not obtain an item; they are reporting their counter.",
+    "  (B) If the user describes a COMPLETED pull (e.g. 'I got Neuvillette at 57 pity', 'I pulled Furina', 'add Chasca to my banner at 43 pity') — call log_gacha_pull.",
 
-  // ── CRITICAL: Math calculation guidance ────────────
-  // The LLM must use the injected store context for arithmetic.
-  "MATH RULE — REMAINING WISHES:",
-  "  When a user asks 'how many wishes do I need' for a character/banner:",
-  "  1. Look up their active goal in the goals array (find goal by goalName or pullType).",
-  "  2. Look up current 5-star pity from the gacha context for the matching banner.",
-  "  3. Calculate: remaining = goal.neededWishes - current_pity.",
-  "  4. Reply with the exact arithmetic: e.g. '180 − 57 = 123 more wishes to guarantee Neuvillette!'",
-  "  Never guess. Always derive the number from the data context provided.",
-].join(" ");
+    // ── CRITICAL: Math calculation guidance ────────────
+    "MATH RULE — REMAINING WISHES:",
+    "  When a user asks 'how many wishes do I need' for a character/banner:",
+    "  1. Look up their active goal in the goals array (find goal by goalName or pullType).",
+    "  2. Look up current 5-star pity from the gacha context for the matching banner.",
+    "  3. Calculate: remaining = goal.neededWishes - current_pity.",
+    "  4. Reply with the exact arithmetic: e.g. '180 − 57 = 123 more wishes to guarantee Neuvillette!'",
+    "  Never guess. Always derive the number from the data context provided."
+  ].join(" ");
+};
 
 // =====================================================
 // STORE CONTEXT SNAPSHOT
@@ -275,10 +328,35 @@ const executeTool = (toolName, args) => {
   // then commit the actual named item as the final entry.
   if (toolName === "log_gacha_pull") {
     const now         = new Date();
-    const bannerType  = args.banner_type;
-    const rarity      = Number(args.rarity) || 5;
+    let bannerType  = args.banner_type;
+    let rarity      = Number(args.rarity);
     const pityCount   = Math.max(1, Number(args.pity) || 1);
     const itemName    = args.character_or_weapon_name;
+
+    // Smart fallback/lookup from character/weapon list
+    if (!rarity || !bannerType) {
+      const charFound = gachaStore.character_list.find(c => c.name.toLowerCase() === itemName.toLowerCase());
+      if (charFound) {
+        if (!rarity) rarity = charFound.rarity || 5;
+        if (!bannerType) {
+          const standardChars = ["jean", "diluc", "mona", "keqing", "qiqi", "tighnari", "dehya"];
+          bannerType = standardChars.includes(itemName.toLowerCase()) ? "standard" : "limited_character";
+        }
+      } else {
+        const weaponFound = gachaStore.weapon_list.find(w => w.name.toLowerCase() === itemName.toLowerCase());
+        if (weaponFound) {
+          if (!rarity) rarity = weaponFound.rarity || 5;
+          if (!bannerType) {
+            const standardWeapons = ["amos' bow", "skyward harp", "lost prayer to the sacred winds", "primordial jade winged-spear", "wolf's gravestone", "aquila favonia", "skyward blade", "skyward pride", "skyward spine", "skyward atlas"];
+            bannerType = standardWeapons.includes(itemName.toLowerCase()) ? "standard" : "limited_weapon";
+          }
+        }
+      }
+    }
+
+    // Ultimate fallback if still undefined:
+    if (!rarity) rarity = 5;
+    if (!bannerType) bannerType = "limited_character";
 
     // Step 1 — Backfill (pityCount - 1) placeholder 3-star pulls
     for (let i = 0; i < pityCount - 1; i++) {
@@ -419,6 +497,45 @@ const executeTool = (toolName, args) => {
         pushAssistant(`Paimon needs the goal ID to delete it. Try saying "delete goal ID 12345".`);
       }
     }
+  } else if (toolName === "Maps_application") {
+    const route = args.target_route;
+    if ((route === "/account_setting" || route === "/planner") && !authStore.currentUser) {
+      router.push("/login");
+      pushAssistant(
+        "Traveler, you must sign in first to view that page! " +
+        "Paimon has routed you to the Login page to keep your private account configurations, " +
+        "planner goals, and settings data completely secure. " +
+        "Please enter your username and password below, or click the register link to create a new account."
+      );
+    } else {
+      router.push(route);
+      const pageName = {
+        "/": "Homepage",
+        "/calculator": "Calculator",
+        "/wish-counter": "Wish Counter",
+        "/wish-analytics": "Wish Analytics",
+        "/todo-list": "Todo List",
+        "/planner": "Planner",
+        "/account_setting": "Account Settings",
+        "/login": "Login Page",
+        "/registration": "Registration Page",
+        "/character": "Character Details"
+      }[route] || route;
+      pushAssistant(`Paimon has routed you to the ${pageName}!`);
+    }
+  } else if (toolName === "setup_calculator") {
+    const itemName = args.item_name;
+    const currentLevel = args.current_level;
+    const targetLevel = args.target_level;
+
+    gachaStore.calculatorTarget = {
+      item_name: itemName,
+      current_level: currentLevel,
+      target_level: targetLevel
+    };
+
+    router.push("/calculator");
+    pushAssistant(`Paimon has set up the calculator for ${itemName}!`);
   }
 };
 
@@ -434,7 +551,7 @@ const handleMessageSubmit = async (messageText) => {
 
   // Build message array: system prompt + conversation history + new user turn
   const messages = [
-    { role: "system", content: SYSTEM_PROMPT },
+    { role: "system", content: getSystemPrompt() },
     ...chatHistory.value
         .slice(0, -1)  // exclude the message we just pushed
         .map(m => ({ role: m.role === "user" ? "user" : "assistant", content: m.text })),
@@ -447,25 +564,29 @@ const handleMessageSubmit = async (messageText) => {
       messages,
       tools:    TOOLS,
       storeCtx: buildStoreContext(),
-      systemPrompt: SYSTEM_PROMPT
+      systemPrompt: getSystemPrompt()
     });
   } catch (err) {
-    console.warn("[AI Service] callUnifiedAI failed:", err);
+    console.error("[AI Service] callUnifiedAI error:", err);
+    pushAssistant("I ran into an issue processing that. Could you clarify the exact details (like banner, rarity, or level)?");
+    isLoading.value = false;
+    await scrollToBottom();
+    return;
   }
 
   isLoading.value = false;
 
   if (result === null) {
-    // All API slots exhausted — guide the user to either config option
-    pushAssistant(
-      "[Offline] Paimon couldn't reach any AI provider. " +
-      "To activate the AI: open src/services/ai_summarizer.js and paste your Gemini key into the " +
-      "_HARDCODED_KEYS.gemini_1 field, OR set VITE_GEMINI_API_KEY in your .env file and restart the dev server."
-    );
+    pushAssistant("I ran into an issue processing that. Could you clarify the exact details (like banner, rarity, or level)?");
   } else if (result.type === "tool_call") {
-    executeTool(result.tool, result.args);
+    try {
+      executeTool(result.tool, result.args);
+    } catch (toolErr) {
+      console.error("[AI Service] executeTool failed:", toolErr);
+      pushAssistant("I ran into an issue processing that. Could you clarify the exact details (like banner, rarity, or level)?");
+    }
   } else {
-    pushAssistant(result.text || "Paimon had nothing to say. Please try again!");
+    pushAssistant(result.text || "I ran into an issue processing that. Could you clarify the exact details (like banner, rarity, or level)?");
   }
 
   await scrollToBottom();

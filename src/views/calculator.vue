@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { character_exp } from "../data/character_exp.js";
 import { weapon_exp } from "../data/weapon_exp.js";
 import { useTodoStore } from "../data/todo_store.js";
@@ -97,6 +97,63 @@ onMounted(() => {
 onUnmounted(() => {
   if (timerInterval) clearInterval(timerInterval);
 });
+
+const handleCalculatorTarget = async (target) => {
+  if (!target) return;
+  await gachaStore.fetch_game_data();
+  
+  let targetName = "";
+  let curLvl = 1;
+  let tgtLvl = 90;
+  
+  if (typeof target === "string") {
+    targetName = target;
+  } else if (typeof target === "object") {
+    targetName = target.item_name || "";
+    curLvl = target.current_level !== undefined ? Number(target.current_level) : 1;
+    tgtLvl = target.target_level !== undefined ? Number(target.target_level) : 90;
+  }
+  
+  if (!targetName) return;
+
+  const charFound = gachaStore.character_list.find(
+    (c) => c.name.toLowerCase() === targetName.toLowerCase()
+  );
+  if (charFound) {
+    calcType.value = "character";
+    selectedCharacter.value = charFound;
+    currentLevel.value = curLvl;
+    intendedLevel.value = tgtLvl;
+    currentExp.value = 0;
+    calculateExpLogic();
+    gachaStore.calculatorTarget = null;
+    return;
+  }
+  
+  const weaponFound = gachaStore.weapon_list.find(
+    (w) => w.name.toLowerCase() === targetName.toLowerCase()
+  );
+  if (weaponFound) {
+    calcType.value = "weapon";
+    selectedWeapon.value = weaponFound;
+    currentLevel.value = curLvl;
+    intendedLevel.value = tgtLvl;
+    currentExp.value = 0;
+    calculateExpLogic();
+    gachaStore.calculatorTarget = null;
+    return;
+  }
+};
+
+watch(
+  () => gachaStore.calculatorTarget,
+  (newVal) => {
+    if (newVal) {
+      handleCalculatorTarget(newVal);
+    }
+  },
+  { immediate: true }
+);
 
 const changeType = (newType) => {
   calcType.value = newType;
@@ -232,7 +289,7 @@ const addTodo = () => {
   // Send to the Pinia store
   todoStore.addTodo({
     type: calcType.value,
-    name: nameToSave,
+    task_name: nameToSave,
     currentLevel: currentLevel.value,
     targetLevel: intendedLevel.value,
     mora: Math.ceil(moraNeeded.value),

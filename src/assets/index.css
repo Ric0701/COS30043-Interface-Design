@@ -1158,3 +1158,32 @@ body {
     font-size: 13.5px;
   }
 }
+/* ========================================= */
+/* Wallpaper Background & Glassmorphic Auth  */
+/* ========================================= */
+.auth_wallpaper-container {
+  background-image: url('./lib/HD-mondstadt.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.auth_glass-card {
+  width: 100%;
+  max-width: 400px;
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 16px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  margin: 15px;
+}
+
+@media (max-width: 576px) {
+  .auth_glass-card {
+    max-width: 90vw;
+  }
+}

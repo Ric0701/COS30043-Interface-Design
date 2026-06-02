@@ -16,7 +16,7 @@ const historyTitle = computed(() => {
 </script>
 
 <template>
-  <div class="container-fluid d-flex min-vh-100 mt-5 pt-5 flex-column">
+  <div class="container-fluid d-flex min-vh-100 mt-5 mb-5 pt-5 flex-column">
     <div v-if="!activeHistory">
       <div class="text-left mb-4 text-dark">
         <h1 class="fw-bold display-4 text-center">Wish Counter</h1>

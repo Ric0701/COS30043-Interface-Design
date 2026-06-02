@@ -16,13 +16,21 @@ export const useTodoStore = defineStore("todo", {
       try {
         const { data, error } = await supabase
           .from("todos")
-          .select("*")
-          .eq("username", authStore.currentUser)
-          .order("position", { ascending: true });
+          .select("*");
 
         if (error) throw error;
         if (data) {
-          this.todos = data;
+          this.todos = data.map(todo => ({
+            id: todo.id,
+            task_name: todo.task_name,
+            task_type: todo.task_type || "character",
+            done: todo.status === "completed" || todo.status === "done",
+            status: todo.status || "pending",
+            mora: 0,
+            items: [],
+            currentLevel: 1,
+            targetLevel: 90,
+          }));
         }
       } catch (error) {
         console.error("[Todo Store] Failed to load todos from Supabase:", error);
@@ -33,21 +41,27 @@ export const useTodoStore = defineStore("todo", {
       if (!authStore.currentUser) return;
 
       const newTodo = {
-        id: Date.now(),
-        username: authStore.currentUser,
-        text: item.text,
+        id: crypto.randomUUID(),
+        task_name: item.task_name || "Unknown",
+        task_type: item.type || "character",
         done: false,
+        status: "pending",
         mora: Number(item.mora) || 0,
         items: item.items || [],
-        priority: item.priority || "low",
-        position: this.todos.length,
+        currentLevel: item.currentLevel || 1,
+        targetLevel: item.targetLevel || 90,
       };
 
       // Optimistic update
       this.todos.push(newTodo);
 
       try {
-        const { error } = await supabase.from("todos").insert([newTodo]);
+        const { error } = await supabase.from("todos").insert([{
+          id: newTodo.id,
+          task_name: newTodo.task_name,
+          task_type: newTodo.task_type,
+          status: newTodo.status,
+        }]);
         if (error) throw error;
       } catch (error) {
         console.error("[Todo Store] Failed to add todo to Supabase:", error);
@@ -67,13 +81,13 @@ export const useTodoStore = defineStore("todo", {
     async completeTodo(id) {
       const task = this.todos.find((t) => t.id === id);
       if (task) {
-        // Toggle done status
         task.done = !task.done;
+        task.status = task.done ? "completed" : "pending";
 
         try {
           const { error } = await supabase
             .from("todos")
-            .update({ done: task.done })
+            .update({ status: task.status })
             .eq("id", id);
           if (error) throw error;
         } catch (error) {
@@ -85,26 +99,9 @@ export const useTodoStore = defineStore("todo", {
       }
     },
     async reorderTodos(oldIndex, newIndex) {
-      // Reorder locally
+      // Reorder locally since 'position' column does not exist in Supabase
       const [movedItem] = this.todos.splice(oldIndex, 1);
       this.todos.splice(newIndex, 0, movedItem);
-
-      // Save updated order values back to Supabase
-      try {
-        const updates = this.todos.map((todo, index) => {
-          todo.position = index;
-          return supabase
-            .from("todos")
-            .update({ position: index })
-            .eq("id", todo.id);
-        });
-        await Promise.all(updates);
-      } catch (error) {
-        console.error(
-          "[Todo Store] Failed to persist new todo order to Supabase:",
-          error,
-        );
-      }
     },
   },
   getters: {

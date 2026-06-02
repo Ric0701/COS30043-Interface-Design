@@ -12,7 +12,7 @@ import { useAuthStore } from "./data/auth_store.js";
 
 const route = useRoute();
 
-const isNotHomepage = computed(() => route.path !== "/");
+const isNotHomepage = computed(() => route.path !== "/" && route.path !== "/login" && route.path !== "/registration");
 
 onMounted(async () => {
   const authStore = useAuthStore();

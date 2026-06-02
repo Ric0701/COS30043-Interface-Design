@@ -17,12 +17,17 @@ export const useGoalStore = defineStore("goal", {
       try {
         const { data, error } = await supabase
           .from("goals")
-          .select("*")
-          .eq("username", authStore.currentUser);
+          .select("*");
 
         if (error) throw error;
         if (data) {
-          this.goals = data.sort((a, b) => a.id - b.id);
+          this.goals = data.map((g) => ({
+            id: g.id,
+            goalName: g.goal_name,
+            targetWeek: g.target_week,
+            pullType: g.pull_type,
+            neededWishes: Number(g.needed_wishes) || 0,
+          }));
         }
       } catch (error) {
         console.error("[Goal Store] Failed to load goals from Supabase:", error);
@@ -33,8 +38,7 @@ export const useGoalStore = defineStore("goal", {
       if (!authStore.currentUser) return;
 
       const newGoal = {
-        id: Date.now(),
-        username: authStore.currentUser,
+        id: crypto.randomUUID(),
         goalName,
         targetWeek,
         pullType,
@@ -45,7 +49,13 @@ export const useGoalStore = defineStore("goal", {
       this.goals.push(newGoal);
 
       try {
-        const { error } = await supabase.from("goals").insert([newGoal]);
+        const { error } = await supabase.from("goals").insert([{
+          id: newGoal.id,
+          goal_name: newGoal.goalName,
+          target_week: newGoal.targetWeek,
+          pull_type: newGoal.pullType,
+          needed_wishes: newGoal.neededWishes,
+        }]);
         if (error) throw error;
       } catch (error) {
         console.error("[Goal Store] Failed to add goal to Supabase:", error);
@@ -68,10 +78,16 @@ export const useGoalStore = defineStore("goal", {
         // Optimistic update
         Object.assign(goal, patch);
 
+        const dbPatch = {};
+        if (patch.goalName !== undefined) dbPatch.goal_name = patch.goalName;
+        if (patch.targetWeek !== undefined) dbPatch.target_week = patch.targetWeek;
+        if (patch.pullType !== undefined) dbPatch.pull_type = patch.pullType;
+        if (patch.neededWishes !== undefined) dbPatch.needed_wishes = Number(patch.neededWishes) || 0;
+
         try {
           const { error } = await supabase
             .from("goals")
-            .update(patch)
+            .update(dbPatch)
             .eq("id", id);
           if (error) throw error;
         } catch (error) {
