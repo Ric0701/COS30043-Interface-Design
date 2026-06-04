@@ -1,10 +1,12 @@
 import { defineStore } from "pinia";
 import { useAuthStore } from "./auth_store.js";
 import { supabase } from "../services/supabase.js";
+import { sanitizeString } from "../services/sanitize.js";
 
 export const useTodoStore = defineStore("todo", {
   state: () => ({
     todos: [],
+    pendingWrites: [],
   }),
   actions: {
     async loadData() {
@@ -83,23 +85,60 @@ export const useTodoStore = defineStore("todo", {
     async addTodo(item) {
       const authStore = useAuthStore();
 
+      let rawName = item.task_name || item.name || "Unknown";
+      let nameIsMalicious = /<[^>]*>/g.test(rawName);
+      let task_name = sanitizeString(rawName);
+
+      if (nameIsMalicious) {
+        authStore.showToast("Malicious HTML/Script payload detected and sanitized!", "warning");
+      }
+
+      const task_type = item.task_type || item.type || "character";
+      const currentLevel = Number(item.currentLevel) || 1;
+      const targetLevel = Number(item.targetLevel) || 90;
+
+      // Unique signature for race-condition locking
+      const key = `${task_name}_${task_type}_${currentLevel}_${targetLevel}`;
+      
+      // Check if duplicate addition is already in-flight
+      if (this.pendingWrites.includes(key)) {
+        console.warn("[Todo Store] Duplicate addition blocked for key:", key);
+        return { success: false, reason: "duplicate" };
+      }
+      
+      // Optimistic check against already existing active tasks
+      const isAlreadyAdded = this.todos.some(
+        (t) =>
+          t.task_name === task_name &&
+          t.task_type === task_type &&
+          t.currentLevel === currentLevel &&
+          t.targetLevel === targetLevel &&
+          !t.done
+      );
+      if (isAlreadyAdded) {
+        return { success: false, reason: "exists" };
+      }
+
+      this.pendingWrites.push(key);
+
       const newTodo = {
         id: crypto.randomUUID(),
-        task_name: item.task_name || item.name || "Unknown",
-        task_type: item.task_type || item.type || "character",
+        task_name,
+        task_type,
         done: false,
         status: "pending",
         mora: Number(item.mora) || 0,
         items: item.items || [],
-        currentLevel: item.currentLevel || 1,
-        targetLevel: item.targetLevel || 90,
+        currentLevel,
+        targetLevel,
       };
 
       if (!authStore.currentUser) {
         // Guest mode
         this.todos.push(newTodo);
         localStorage.setItem("todos", JSON.stringify(this.todos));
-        return;
+        this.pendingWrites = this.pendingWrites.filter((k) => k !== key);
+        return { success: true };
       }
 
       try {
@@ -117,8 +156,12 @@ export const useTodoStore = defineStore("todo", {
 
         // Reactivity Fix: Update local state immediately after database write succeeds
         this.todos.push(newTodo);
+        return { success: true };
       } catch (error) {
         console.error("[Todo Store] Failed to add todo to Supabase:", error);
+        return { success: false, reason: error.message };
+      } finally {
+        this.pendingWrites = this.pendingWrites.filter((k) => k !== key);
       }
     },
     async removeTodo(id) {

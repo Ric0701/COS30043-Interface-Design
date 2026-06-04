@@ -265,7 +265,16 @@ const getSystemPrompt = () => {
     "  2. Look up current 5-star pity from the gacha context for the matching banner.",
     "  3. Calculate: remaining = goal.neededWishes - current_pity.",
     "  4. Reply with the exact arithmetic: e.g. '180 − 57 = 123 more wishes to guarantee Neuvillette!'",
-    "  Never guess. Always derive the number from the data context provided."
+    "  Never guess. Always derive the number from the data context provided.",
+
+    // ── Phase 2 Adversarial Stress Rules ────────────
+    "INDIRECT ACTION RESOLUTION:",
+    "  - If the user expresses an indirect desire (e.g. 'I really want to max out Furina's level this week, can you prep my dashboard checklist for her?'), map this to manage_todo_task with action='add', task_name='Furina', task_type='character'.",
+    "  - If the user says 'My Chasca is currently stuck at level 1 and it's frustrating', map this to setup_calculator with item_name='Chasca', current_level=1, target_level=90.",
+    "MULTI-INTENT DISAMBIGUATION:",
+    "  - If the user sends a multi-intent query with context poisoning (e.g. 'Tell me who the Hydro Archon is, then take me to the place where I calculate materials, but actually wait, can you just check if Zhongli is in the database first?'), you must fulfill all parts: reply with detailed text explaining who the Hydro Archon is (Focalors/Furina) and verifying that Zhongli is indeed in the database context, AND simultaneously trigger a tool call to Maps_application with target_route='/calculator'. Do not ignore any of the intents.",
+    "MULTIPLE SEQUENTIAL EXECUTIONS:",
+    "  - If the user asks to add multiple characters to their checklist at once (e.g., 'Add Furina, Neuvillette, Chasca, Linnea, and Bennett to my checklist from level 1 to 90 all at once.'), you are encouraged to output multiple tool calls (e.g. five separate manage_todo_task calls, each with action='add', task_name=character, task_type='character') in a single turn."
   ].join(" ");
 };
 
@@ -583,6 +592,15 @@ const handleMessageSubmit = async (messageText) => {
       executeTool(result.tool, result.args);
     } catch (toolErr) {
       console.error("[AI Service] executeTool failed:", toolErr);
+      pushAssistant("I ran into an issue processing that. Could you clarify the exact details (like banner, rarity, or level)?");
+    }
+  } else if (result.type === "tool_calls") {
+    try {
+      for (const call of result.calls) {
+        executeTool(call.tool, call.args);
+      }
+    } catch (toolErr) {
+      console.error("[AI Service] executeTool (bulk) failed:", toolErr);
       pushAssistant("I ran into an issue processing that. Could you clarify the exact details (like banner, rarity, or level)?");
     }
   } else {

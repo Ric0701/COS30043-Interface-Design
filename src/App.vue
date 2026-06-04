@@ -11,11 +11,11 @@ import { useGoalStore } from "./data/goal_store.js";
 import { useAuthStore } from "./data/auth_store.js";
 
 const route = useRoute();
+const authStore = useAuthStore();
 
 const isNotHomepage = computed(() => route.path !== "/" && route.path !== "/login" && route.path !== "/registration");
 
 onMounted(async () => {
-  const authStore = useAuthStore();
   await authStore.loadData();
   await Promise.all([
     useTodoStore().loadData(),
@@ -63,6 +63,15 @@ watch(
     :class="{ 'main-content-offset': isNotHomepage }"
   >
     <nav_bar />
+
+    <!-- Global Warning/Validation Toast -->
+    <div
+      v-if="authStore.toastMessage"
+      class="validation_toast-alert"
+    >
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>{{ authStore.toastMessage }}</span>
+    </div>
 
     <RouterView />
 

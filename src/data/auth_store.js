@@ -13,8 +13,20 @@ export const useAuthStore = defineStore("auth", {
   state: () => ({
     users: [],
     currentUser: sessionStorage.getItem("genshin_current_user") || null,
+    toastMessage: "",
+    toastType: "",
   }),
   actions: {
+    showToast(message, type = "warning") {
+      this.toastMessage = message;
+      this.toastType = type;
+      setTimeout(() => {
+        if (this.toastMessage === message) {
+          this.toastMessage = "";
+          this.toastType = "";
+        }
+      }, 4000);
+    },
     async loadData() {
       try {
         const { data, error } = await supabase.from("profiles").select("*");

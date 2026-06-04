@@ -4,9 +4,15 @@ import { character_exp } from "../data/character_exp.js";
 import { weapon_exp } from "../data/weapon_exp.js";
 import { useTodoStore } from "../data/todo_store.js";
 import { useGachaStore } from "../gacha_store.js";
+import { useAuthStore } from "../data/auth_store.js";
 
 const todoStore = useTodoStore();
 const gachaStore = useGachaStore();
+const authStore = useAuthStore();
+
+const currentLevelError = ref(false);
+const intendedLevelError = ref(false);
+const currentExpError = ref(false);
 const calcType = ref("character");
 const hasCalculated = ref(false);
 
@@ -83,10 +89,10 @@ onMounted(() => {
   timerInterval = setInterval(updateTime, 1000);
 
   gachaStore.fetch_game_data().then(() => {
-    if (gachaStore.character_list.length > 0) {
+    if (!selectedCharacter.value && gachaStore.character_list.length > 0) {
       selectedCharacter.value = gachaStore.character_list[0];
     }
-    if (gachaStore.weapon_list.length > 0) {
+    if (!selectedWeapon.value && gachaStore.weapon_list.length > 0) {
       selectedWeapon.value = gachaStore.weapon_list[0];
     }
   });
@@ -216,9 +222,51 @@ const calculateResinLogic = () => {
   hasCalculated.value = true;
 };
 
-const calculateExpLogic = () => {
-  if (currentLevel.value >= intendedLevel.value) {
+const validateExpInputs = () => {
+  currentLevelError.value = false;
+  intendedLevelError.value = false;
+  currentExpError.value = false;
+
+  let isValid = true;
+
+  const cur = Number(currentLevel.value);
+  const intended = Number(intendedLevel.value);
+  const exp = Number(currentExp.value);
+
+  if (isNaN(cur) || !Number.isInteger(cur) || cur < 1 || cur > 90) {
+    currentLevelError.value = true;
+    isValid = false;
+  }
+
+  if (isNaN(intended) || !Number.isInteger(intended) || intended < 1 || intended > 90) {
+    intendedLevelError.value = true;
+    isValid = false;
+  }
+
+  if (isNaN(exp) || !Number.isInteger(exp) || exp < 0) {
+    currentExpError.value = true;
+    isValid = false;
+  }
+
+  if (!isValid) {
+    authStore.showToast("Invalid level/EXP inputs. Levels must be integers between 1 and 90, and EXP must be non-negative.", "warning");
+    alert("Invalid level/EXP inputs. Levels must be integers between 1 and 90, and EXP must be non-negative.");
+    return false;
+  }
+
+  if (cur >= intended) {
+    currentLevelError.value = true;
+    intendedLevelError.value = true;
+    authStore.showToast("Intended level must be higher than current level.", "warning");
     alert("Intended level must be higher than current level.");
+    return false;
+  }
+
+  return true;
+};
+
+const calculateExpLogic = () => {
+  if (!validateExpInputs()) {
     return;
   }
 
@@ -266,7 +314,7 @@ const calculateExpLogic = () => {
   hasCalculated.value = true;
 };
 
-const addTodo = () => {
+const addTodo = async () => {
   // Figure out which name we are saving based on the mode
   const isChar = calcType.value === "character";
   const nameToSave = isChar
@@ -285,7 +333,7 @@ const addTodo = () => {
     .filter((item) => item.count > 0); // Only save items we actually need
 
   // Send to the Pinia store
-  todoStore.addTodo({
+  const res = await todoStore.addTodo({
     type: calcType.value,
     task_name: nameToSave,
     currentLevel: currentLevel.value,
@@ -294,7 +342,9 @@ const addTodo = () => {
     items: formattedItems,
   });
 
-  alert(`${nameToSave} added to Todo List!`);
+  if (res && res.success) {
+    alert(`${nameToSave} added to Todo List!`);
+  }
 };
 </script>
 
@@ -383,6 +433,7 @@ const addTodo = () => {
                   type="number"
                   class="form-control custom-input text-dark"
                   v-model.number="currentLevel"
+                  :class="{ 'validation_error-input': currentLevelError }"
                   min="1"
                   max="90"
                 />
@@ -393,6 +444,7 @@ const addTodo = () => {
                   type="number"
                   class="form-control custom-input text-dark"
                   v-model.number="intendedLevel"
+                  :class="{ 'validation_error-input': intendedLevelError }"
                   :min="currentLevel"
                   max="90"
                 />
@@ -405,6 +457,7 @@ const addTodo = () => {
                 type="number"
                 class="form-control custom-input text-dark"
                 v-model.number="currentExp"
+                :class="{ 'validation_error-input': currentExpError }"
                 min="0"
               />
             </div>

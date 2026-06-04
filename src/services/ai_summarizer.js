@@ -181,12 +181,23 @@ async function _callGeminiRestUnified({ key, messages, tools, storeCtx, systemPr
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
   const data = await response.json();
-  const part = data.candidates?.[0]?.content?.parts?.[0];
+  const parts = data.candidates?.[0]?.content?.parts || [];
+  
+  // Extract all function calls
+  const toolCalls = parts.filter(p => p.functionCall).map(p => ({
+    tool: p.functionCall.name,
+    args: p.functionCall.args
+  }));
 
-  if (part?.functionCall) {
-    console.log(`[AI Service | Gemini] Tool call: ${part.functionCall.name}`, part.functionCall.args);
-    return { type: "tool_call", tool: part.functionCall.name, args: part.functionCall.args };
+  if (toolCalls.length > 1) {
+    console.log(`[AI Service | Gemini] Multiple tool calls:`, toolCalls);
+    return { type: "tool_calls", calls: toolCalls };
+  } else if (toolCalls.length === 1) {
+    console.log(`[AI Service | Gemini] Single tool call: ${toolCalls[0].tool}`, toolCalls[0].args);
+    return { type: "tool_call", tool: toolCalls[0].tool, args: toolCalls[0].args };
   }
+
+  const part = parts[0];
   return { type: "text", text: part?.text ?? "" };
 }
 
@@ -241,12 +252,20 @@ async function _callOpenRouterUnified({ key, messages, tools, storeCtx, systemPr
   const data    = await response.json();
   const message = data.choices?.[0]?.message;
 
-  if (message?.tool_calls?.[0]) {
-    const tc = message.tool_calls[0];
-    let args = {};
-    try { args = JSON.parse(tc.function.arguments); } catch { /* silent */ }
-    console.log(`[AI Service | OpenRouter] Tool call: ${tc.function.name}`, args);
-    return { type: "tool_call", tool: tc.function.name, args };
+  if (message?.tool_calls && message.tool_calls.length > 0) {
+    const toolCalls = message.tool_calls.map(tc => {
+      let args = {};
+      try { args = JSON.parse(tc.function.arguments); } catch { /* silent */ }
+      return { tool: tc.function.name, args };
+    });
+
+    if (toolCalls.length > 1) {
+      console.log(`[AI Service | OpenRouter] Multiple tool calls:`, toolCalls);
+      return { type: "tool_calls", calls: toolCalls };
+    } else {
+      console.log(`[AI Service | OpenRouter] Single tool call: ${toolCalls[0].tool}`, toolCalls[0].args);
+      return { type: "tool_call", tool: toolCalls[0].tool, args: toolCalls[0].args };
+    }
   }
   return { type: "text", text: message?.content ?? "" };
 }
