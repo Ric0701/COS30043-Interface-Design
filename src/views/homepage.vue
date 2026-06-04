@@ -77,27 +77,7 @@ const switchBanner = (index) => {
   trackRef.value.scrollIntoView({ behavior: "smooth" });
 };
 
-// Section 3: Showcase Data
-const tools = [
-  {
-    title: "Pity Calculator",
-    desc: "Plan your resources precisely for character or weapon levels.",
-    icon: "bi-calculator",
-    link: "/calculator",
-  },
-  {
-    title: "Wish Counter",
-    desc: "Track your banner history and never lose sight of your pity.",
-    icon: "bi-stars",
-    link: "/wish-counter",
-  },
-  {
-    title: "Todo Planner",
-    desc: "Automatically aggregate all materials needed for your goals.",
-    icon: "bi-journal-check",
-    link: "/todo-list",
-  },
-];
+
 
 // Section 4: Reward Parsing & Display Helper Functions
 const formatQuantity = (qtyStr) => {
@@ -264,18 +244,82 @@ onMounted(() => {
     </section>
 
     <!-- 3. Showcase Section -->
-    <section class="bg-light-blue py-5">
-      <div class="container">
-        <h2 class="fw-bold text-dark text-center mb-5">Explore Our Tools</h2>
-        <div class="row g-4">
-          <div v-for="tool in tools" :key="tool.title" class="col-12 col-md-4">
-            <div class="card custom-dark-card h-100 p-4 showcase-card border-0">
-              <i :class="['bi', tool.icon, 'fs-1 text-primary mb-3']"></i>
-              <h4 class="fw-bold">{{ tool.title }}</h4>
-              <p class="text-muted flex-grow-1">{{ tool.desc }}</p>
-              <router-link :to="tool.link" class="btn btn-outline-primary mt-3"
-                >Try Now</router-link
-              >
+    <section class="showcase_section py-5 position-relative overflow-hidden">
+      <!-- Background ambient glow blobs -->
+      <div class="showcase_glow-blob-1"></div>
+      <div class="showcase_glow-blob-2"></div>
+      
+      <div class="container position-relative" style="z-index: 2;">
+        <div class="text-center mb-5">
+          <h2 class="fw-bold display-5 text-dark">
+            Next-Gen <span class="about_gradient-text">Companion Core</span>
+          </h2>
+          <p class="text-muted fs-5">
+            Cloud-connected, AI-automated tools designed to replace legacy spreadsheets.
+          </p>
+        </div>
+        
+        <div class="row g-4 justify-content-center">
+          <!-- Card 1: Calculator -->
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="card showcase_glass-card showcase-card h-100 border-0 p-4 d-flex flex-column">
+              <div class="d-flex align-items-center justify-content-between mb-4">
+                <div class="showcase_icon-wrapper calc-glow">
+                  <i class="bi bi-calculator-fill fs-3 text-primary"></i>
+                </div>
+                <span class="badge showcase_badge-ai">AI-Automated</span>
+              </div>
+              <h3 class="fw-bold mb-3 text-dark">Advanced Material Calculator</h3>
+              <p class="text-secondary flex-grow-1 leading-relaxed">
+                Effortlessly maps material requirements from level 1 to 90 for both characters and weapons. 
+                Fueled by our intelligent Agentic AI Assistant, the form fields auto-populate based on natural 
+                chat dialogs, triggering real-time resource and Resin computations instantly.
+              </p>
+              <router-link to="/calculator" class="btn showcase_btn showcase_btn-primary mt-4 w-100">
+                Launch Calculator <i class="bi bi-arrow-right ms-2"></i>
+              </router-link>
+            </div>
+          </div>
+
+          <!-- Card 2: Wish Counter -->
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="card showcase_glass-card showcase-card h-100 border-0 p-4 d-flex flex-column">
+              <div class="d-flex align-items-center justify-content-between mb-4">
+                <div class="showcase_icon-wrapper wish-glow">
+                  <i class="bi bi-stars fs-3 text-warning"></i>
+                </div>
+                <span class="badge showcase_badge-cloud">Cloud-Synced</span>
+              </div>
+              <h3 class="fw-bold mb-3 text-dark">Cloud-Synced Wish Counter</h3>
+              <p class="text-secondary flex-grow-1 leading-relaxed">
+                A robust wish tracking system that logs your pull history, calculates spending cost, and monitors active 
+                pity counters. Every wish logged is securely stored on a Supabase PostgreSQL cloud database, 
+                eliminating local storage reliance and ensuring persistent access on any device.
+              </p>
+              <router-link to="/wish-counter" class="btn showcase_btn showcase_btn-warning mt-4 w-100 text-white">
+                Track Wishes <i class="bi bi-arrow-right ms-2"></i>
+              </router-link>
+            </div>
+          </div>
+
+          <!-- Card 3: Todo List -->
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="card showcase_glass-card showcase-card h-100 border-0 p-4 d-flex flex-column">
+              <div class="d-flex align-items-center justify-content-between mb-4">
+                <div class="showcase_icon-wrapper todo-glow">
+                  <i class="bi bi-card-checklist fs-3 text-success"></i>
+                </div>
+                <span class="badge showcase_badge-reactive">Live Reactive</span>
+              </div>
+              <h3 class="fw-bold mb-3 text-dark">Reactive Dynamic Todo List</h3>
+              <p class="text-secondary flex-grow-1 leading-relaxed">
+                An interactive farming pipeline that populates resource collection checklists dynamically. 
+                Whether you manually send calculations from the Calculator, prompt the AI widget to log items, 
+                or alternate between guest and authenticated modes, the checklist responds instantly with live state updates.
+              </p>
+              <router-link to="/todo-list" class="btn showcase_btn showcase_btn-success mt-4 w-100">
+                Manage Todo List <i class="bi bi-arrow-right ms-2"></i>
+              </router-link>
             </div>
           </div>
         </div>

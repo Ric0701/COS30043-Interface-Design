@@ -1287,3 +1287,166 @@ body {
     opacity: 1;
   }
 }
+
+/* ======================================================= */
+/* Showcase Section (views/homepage.vue)                  */
+/* ======================================================= */
+.showcase_section {
+  background: #f8fafc;
+}
+
+.showcase_glow-blob-1 {
+  position: absolute;
+  top: -10%;
+  left: -5%;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(13, 110, 253, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+  filter: blur(40px);
+  pointer-events: none;
+}
+
+.showcase_glow-blob-2 {
+  position: absolute;
+  bottom: -10%;
+  right: -5%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(25, 135, 84, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
+  filter: blur(50px);
+  pointer-events: none;
+}
+
+.showcase_glass-card {
+  background: rgba(255, 255, 255, 0.65) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03) !important;
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.3s ease !important;
+}
+
+.showcase_glass-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 15px 35px rgba(13, 110, 253, 0.1) !important;
+  border-color: rgba(13, 110, 253, 0.25) !important;
+}
+
+.showcase_icon-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+  transition: transform 0.3s ease;
+}
+
+.showcase_glass-card:hover .showcase_icon-wrapper {
+  transform: scale(1.1) rotate(3deg);
+}
+
+.calc-glow {
+  background: rgba(13, 110, 253, 0.08) !important;
+  border-color: rgba(13, 110, 253, 0.15) !important;
+  box-shadow: 0 0 15px rgba(13, 110, 253, 0.1) !important;
+}
+
+.wish-glow {
+  background: rgba(255, 193, 7, 0.08) !important;
+  border-color: rgba(255, 193, 7, 0.15) !important;
+  box-shadow: 0 0 15px rgba(255, 193, 7, 0.1) !important;
+}
+
+.todo-glow {
+  background: rgba(25, 135, 84, 0.08) !important;
+  border-color: rgba(25, 135, 84, 0.15) !important;
+  box-shadow: 0 0 15px rgba(25, 135, 84, 0.1) !important;
+}
+
+.showcase_badge-ai {
+  background-color: rgba(13, 110, 253, 0.1) !important;
+  color: #0d6efd !important;
+  border: 1px solid rgba(13, 110, 253, 0.2) !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  padding: 5px 10px !important;
+  border-radius: 20px !important;
+}
+
+.showcase_badge-cloud {
+  background-color: rgba(255, 193, 7, 0.1) !important;
+  color: #ff9800 !important;
+  border: 1px solid rgba(255, 193, 7, 0.2) !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  padding: 5px 10px !important;
+  border-radius: 20px !important;
+}
+
+.showcase_badge-reactive {
+  background-color: rgba(25, 135, 84, 0.1) !important;
+  color: #198754 !important;
+  border: 1px solid rgba(25, 135, 84, 0.2) !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  padding: 5px 10px !important;
+  border-radius: 20px !important;
+}
+
+.showcase_btn {
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 10px;
+  transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+  border: 1px solid transparent;
+}
+
+.showcase_btn:hover {
+  transform: translateY(-2px);
+}
+
+.showcase_btn:active {
+  transform: translateY(0);
+}
+
+.showcase_btn-primary {
+  background-color: #0d6efd;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(13, 110, 253, 0.3);
+}
+
+.showcase_btn-primary:hover {
+  background-color: #0b5ed7;
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(13, 110, 253, 0.4);
+}
+
+.showcase_btn-warning {
+  background-color: #ffc107;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(255, 193, 7, 0.3);
+}
+
+.showcase_btn-warning:hover {
+  background-color: #ffb300;
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
+}
+
+.showcase_btn-success {
+  background-color: #198754;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(25, 135, 84, 0.3);
+}
+
+.showcase_btn-success:hover {
+  background-color: #157347;
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(25, 135, 84, 0.4);
+}
