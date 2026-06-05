@@ -192,12 +192,13 @@ const TOOLS = [
     parameters: {
       type: "object",
       properties: {
-        target_route: {
+        destination: {
           type: "string",
-          description: "The destination path: '/calculator', '/wish-counter', '/wish-analytics', '/todo-list', '/planner', '/account_setting', or '/'."
+          enum: ["home", "calculator", "wish_counter", "analytics", "todo_list", "planner", "login", "registration", "about", "account_setting"],
+          description: "The strict target route name to navigate the user to."
         }
       },
-      required: ["target_route"]
+      required: ["destination"]
     }
   },
   {
@@ -245,12 +246,11 @@ const getSystemPrompt = () => {
     "Always prefer calling a tool over a text reply when an action is clearly requested.",
     "CRITICAL TOOL RULE: If the user requests an action (like logging a wish or calculating resources) but fails to provide REQUIRED parameters (like rarity, banner type, or character name), YOU MUST NOT attempt to call the JSON tool. Instead, respond with standard text. Explicitly state which specific pieces of information you are missing and ask the user to provide them.",
     
-    // ── Navigation rule ──────────────────────────────
-    "If the user asks to navigate to a protected route (like Dashboard, Planner, or Account settings) but they are NOT logged in, call Maps_application with target_route: '/login'. In this case, DO NOT just give a short error. Reply with a highly detailed, friendly multi-sentence explanation about why they cannot go there (to protect their private account data and setup) and tell them exactly what to do next (sign in or sign up).",
+    "ROUTING RULE: You must navigate users strictly using the provided route name enums. Never guess or hallucinate a destination path or URL. If the user asks for the registration view, dispatch 'registration'. If they ask for account settings, dispatch 'account_setting'. If they ask for checklist or todo list, dispatch 'todo_list'. If they ask for analytics or wish counter details, dispatch 'analytics' or 'wish_counter' respectively. HUMAN INDECISION RULE: If the user exhibits extreme indecision (e.g. 'take me to the planner, wait no, calculator, actually nevermind, show my wish analytics'), you must evaluate their final request and dispatch the tool call matching their final settled choice (e.g., 'analytics'), while conversational text replies politely acknowledge their correction. PROTECTED ROUTE RULE: If the user is NOT logged in and asks to navigate to a protected route (like 'planner' or 'account_setting'), you MUST call Maps_application with the target destination enum (e.g., 'planner' or 'account_setting'). Do not redirect them to 'login' yourself. The application will intercept this and explain the access restriction.",
     
     // ── Tool execution rule ──────────────────────────
     "TOOL SELECTION RULE — NAVIGATION & CALCULATOR:",
-    "  - If the user wants to navigate or open a page (e.g. calculator, planner, checklist, account settings), call Maps_application with the target route.",
+    "  - If the user wants to navigate or open a page (e.g. calculator, planner, checklist, account settings), call Maps_application with the target destination enum.",
     "  - If the user wants to calculate level or ascension resources for a character or weapon, call setup_calculator with the name.",
 
     // ── Tool 1 & 2 pity rule ──────────────────────────
@@ -272,7 +272,7 @@ const getSystemPrompt = () => {
     "  - If the user expresses an indirect desire (e.g. 'I really want to max out Furina's level this week, can you prep my dashboard checklist for her?'), map this to manage_todo_task with action='add', task_name='Furina', task_type='character'.",
     "  - If the user says 'My Chasca is currently stuck at level 1 and it's frustrating', map this to setup_calculator with item_name='Chasca', current_level=1, target_level=90.",
     "MULTI-INTENT DISAMBIGUATION:",
-    "  - If the user sends a multi-intent query with context poisoning (e.g. 'Tell me who the Hydro Archon is, then take me to the place where I calculate materials, but actually wait, can you just check if Zhongli is in the database first?'), you must fulfill all parts: reply with detailed text explaining who the Hydro Archon is (Focalors/Furina) and verifying that Zhongli is indeed in the database context, AND simultaneously trigger a tool call to Maps_application with target_route='/calculator'. Do not ignore any of the intents.",
+    "  - If the user sends a multi-intent query with context poisoning (e.g. 'Tell me who the Hydro Archon is, then take me to the place where I calculate materials, but actually wait, can you just check if Zhongli is in the database first?'), you must fulfill all parts: reply with detailed text explaining who the Hydro Archon is (Focalors/Furina) and verifying that Zhongli is indeed in the database context, AND simultaneously trigger a tool call to Maps_application with destination='calculator'. Do not ignore any of the intents.",
     "MULTIPLE SEQUENTIAL EXECUTIONS:",
     "  - If the user asks to add multiple characters to their checklist at once (e.g., 'Add Furina, Neuvillette, Chasca, Linnea, and Bennett to my checklist from level 1 to 90 all at once.'), you are encouraged to output multiple tool calls (e.g. five separate manage_todo_task calls, each with action='add', task_name=character, task_type='character') in a single turn."
   ].join(" ");
@@ -324,7 +324,7 @@ function localISOStr(date) {
     .toISOString().slice(0, 16);
 }
 
-const executeTool = (toolName, args) => {
+const executeTool = async (toolName, args) => {
   // ── Tool 1: Log a gacha pull ───────────────────────
   //
   // BACKFILL FIX: If the LLM says the pull happened at pity = N,
@@ -507,30 +507,51 @@ const executeTool = (toolName, args) => {
       }
     }
   } else if (toolName === "Maps_application") {
-    const route = args.target_route;
-    if ((route === "/account_setting" || route === "/planner") && !authStore.currentUser) {
-      router.push("/login");
+    const destination = args.destination;
+    const routeMap = {
+      home: "/",
+      calculator: "/calculator",
+      wish_counter: "/wish-counter",
+      analytics: "/wish-analytics",
+      todo_list: "/todo-list",
+      planner: "/planner",
+      login: "/login",
+      registration: "/registration",
+      about: "/about",
+      account_setting: "/account_setting"
+    };
+    const route = routeMap[destination];
+    if (!route) {
+      pushAssistant(`Paimon couldn't find the page for "${destination}".`);
+      return;
+    }
+    
+    if ((destination === "account_setting" || destination === "planner") && !authStore.currentUser) {
       pushAssistant(
-        "Traveler, you must sign in first to view that page! " +
-        "Paimon has routed you to the Login page to keep your private account configurations, " +
-        "planner goals, and settings data completely secure. " +
-        "Please enter your username and password below, or click the register link to create a new account."
+        "Paimon tried to open your Planner page, but it looks like you aren't signed in yet! " +
+        "Please use the Sign In box on your screen to log in so your farming checklists can sync to the database."
       );
+      return;
     } else {
-      router.push(route);
-      const pageName = {
-        "/": "Homepage",
-        "/calculator": "Calculator",
-        "/wish-counter": "Wish Counter",
-        "/wish-analytics": "Wish Analytics",
-        "/todo-list": "Todo List",
-        "/planner": "Planner",
-        "/account_setting": "Account Settings",
-        "/login": "Login Page",
-        "/registration": "Registration Page",
-        "/character": "Character Details"
-      }[route] || route;
-      pushAssistant(`Paimon has routed you to the ${pageName}!`);
+      try {
+        await router.push(route);
+        const pageName = {
+          "/": "Homepage",
+          "/calculator": "Calculator",
+          "/wish-counter": "Wish Counter",
+          "/wish-analytics": "Wish Analytics",
+          "/todo-list": "Todo List",
+          "/planner": "Planner",
+          "/account_setting": "Account Settings",
+          "/login": "Login Page",
+          "/registration": "Registration Page",
+          "/character": "Character Details"
+        }[route] || route;
+        pushAssistant(`Paimon has routed you to the ${pageName}!`);
+      } catch (err) {
+        console.error("Router navigation failed:", err);
+        pushAssistant("Paimon encountered an error trying to navigate to that page.");
+      }
     }
   } else if (toolName === "setup_calculator") {
     const itemName = args.item_name;
@@ -543,8 +564,13 @@ const executeTool = (toolName, args) => {
       target_level: targetLevel
     };
 
-    router.push("/calculator");
-    pushAssistant(`Paimon has set up the calculator for ${itemName}!`);
+    try {
+      await router.push("/calculator");
+      pushAssistant(`Paimon has set up the calculator for ${itemName}!`);
+    } catch (err) {
+      console.error("Router navigation to calculator failed:", err);
+      pushAssistant("Paimon encountered an error trying to navigate to the calculator.");
+    }
   }
 };
 
@@ -589,7 +615,7 @@ const handleMessageSubmit = async (messageText) => {
     pushAssistant("I ran into an issue processing that. Could you clarify the exact details (like banner, rarity, or level)?");
   } else if (result.type === "tool_call") {
     try {
-      executeTool(result.tool, result.args);
+      await executeTool(result.tool, result.args);
     } catch (toolErr) {
       console.error("[AI Service] executeTool failed:", toolErr);
       pushAssistant("I ran into an issue processing that. Could you clarify the exact details (like banner, rarity, or level)?");
@@ -597,7 +623,7 @@ const handleMessageSubmit = async (messageText) => {
   } else if (result.type === "tool_calls") {
     try {
       for (const call of result.calls) {
-        executeTool(call.tool, call.args);
+        await executeTool(call.tool, call.args);
       }
     } catch (toolErr) {
       console.error("[AI Service] executeTool (bulk) failed:", toolErr);
@@ -660,7 +686,7 @@ const scrollToBottom = async () => {
         </div>
 
         <!-- Scrollable Message List -->
-        <div class="ai_assistant_body" ref="chatBody">
+        <div class="ai_assistant_body" ref="chatBody" data-lenis-prevent>
           <div
             v-for="(msg, i) in chatHistory"
             :key="i"

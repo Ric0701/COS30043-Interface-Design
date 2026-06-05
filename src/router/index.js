@@ -31,7 +31,7 @@ const router = createRouter({
     },
     {
       path: "/wish-analytics",
-      name: "wish_analytics",
+      name: "analytics",
       component: wish_analytics,
     },
     {
@@ -46,7 +46,7 @@ const router = createRouter({
     },
     {
       path: "/planner",
-      name: "goal_planner",
+      name: "planner",
       component: goal_planner,
     },
     {
