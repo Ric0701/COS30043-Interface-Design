@@ -188,7 +188,7 @@ const TOOLS = [
   },
   {
     name: "Maps_application",
-    description: "Navigates the user to a different view or page in the application. Use this when the user asks to go to, visit, open, or view a page like the calculator, wish counter, analytics, checklist, planner, account, or settings. Examples: 'Take me to the calculator', 'Bring me to my account settings', 'Go to the planner'.",
+    description: "Navigates the user to a different view or page in the application. Use this when the user asks to go to, visit, open, or view a page like the calculator, wish counter, analytics, checklist, planner, account, or settings. Examples: 'Take me to the calculator', 'Bring me to my account settings', 'Go to the planner', 'bring me to the wish counter', 'go to wish analytics'.",
     parameters: {
       type: "object",
       properties: {
@@ -237,6 +237,9 @@ const getSystemPrompt = () => {
 
   return [
     "You are Paimon, a helpful, deeply knowledgeable Genshin Impact companion. Always act as an interactive, immersive wiki. Keep your tone friendly and supportive, but slightly hyperactive/enthusiastic.",
+    "ACTION OVER WORDS RULE: You are not just a chatbot; you are a controller. When a user asks to navigate (e.g., 'Bring me to...'), you MUST call the Maps_application tool. NEVER claim you have routed the user in your conversational text unless the tool has actually been executed. If you fail to call the tool, you have not performed the action.",
+    "If the navigation tool is not called, the user will be stuck on their current page. You are responsible for ensuring the tool is invoked for every valid navigation intent.",
+    "Always call the Maps_application tool before you generate any response text regarding navigation.",
     "Always reply in plain sentences — no markdown asterisks, bullet dashes, or code fences.",
     "When the user asks about a character, lore, or gameplay mechanics, DO NOT give brief one-sentence answers and DO NOT reject the question. You must elaborate comprehensively in multiple sentences, giving rich descriptions and details.",
     `User Logged In: ${authStore.currentUser ? 'Yes (' + authStore.currentUser + ')' : 'No'}.`,
@@ -250,7 +253,7 @@ const getSystemPrompt = () => {
     
     // ── Tool execution rule ──────────────────────────
     "TOOL SELECTION RULE — NAVIGATION & CALCULATOR:",
-    "  - If the user wants to navigate or open a page (e.g. calculator, planner, checklist, account settings), call Maps_application with the target destination enum.",
+    " - If the user explicitly asks to GO TO, OPEN, VIEW, or BRING THEM TO a page (e.g., 'bring me to the wish counter', 'open planner', 'go to todo list'), you MUST strictly call Maps_application with the correct target route. Do NOT confuse navigation requests with action requests (like logging a pull).",
     "  - If the user wants to calculate level or ascension resources for a character or weapon, call setup_calculator with the name.",
 
     // ── Tool 1 & 2 pity rule ──────────────────────────
@@ -603,7 +606,7 @@ const handleMessageSubmit = async (messageText) => {
     });
   } catch (err) {
     console.error("[AI Service] callUnifiedAI error:", err);
-    pushAssistant("I ran into an issue processing that. Could you clarify the exact details (like banner, rarity, or level)?");
+    pushAssistant("Paimon encountered an error: " + err.message);
     isLoading.value = false;
     await scrollToBottom();
     return;
@@ -612,13 +615,13 @@ const handleMessageSubmit = async (messageText) => {
   isLoading.value = false;
 
   if (result === null) {
-    pushAssistant("I ran into an issue processing that. Could you clarify the exact details (like banner, rarity, or level)?");
+    pushAssistant("Paimon encountered an error: null result");
   } else if (result.type === "tool_call") {
     try {
       await executeTool(result.tool, result.args);
     } catch (toolErr) {
       console.error("[AI Service] executeTool failed:", toolErr);
-      pushAssistant("I ran into an issue processing that. Could you clarify the exact details (like banner, rarity, or level)?");
+      pushAssistant("Paimon encountered an error: " + toolErr.message);
     }
   } else if (result.type === "tool_calls") {
     try {
@@ -627,10 +630,10 @@ const handleMessageSubmit = async (messageText) => {
       }
     } catch (toolErr) {
       console.error("[AI Service] executeTool (bulk) failed:", toolErr);
-      pushAssistant("I ran into an issue processing that. Could you clarify the exact details (like banner, rarity, or level)?");
+      pushAssistant("Paimon encountered an error: " + toolErr.message);
     }
   } else {
-    pushAssistant(result.text || "I ran into an issue processing that. Could you clarify the exact details (like banner, rarity, or level)?");
+    pushAssistant(result.text || "Paimon encountered an error: empty response");
   }
 
   await scrollToBottom();

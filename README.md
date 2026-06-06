@@ -8,8 +8,8 @@
 
 | Resource | Link |
 |---|---|
-| 🌐 **Live Website** | `https://cos30043-interface-design.pages.dev/` |
-| 🎬 **Presentation Video** | `[Insert Presentation Video Link Here]` |
+| 🌐 **Live Website** | <https://cos30043-interface-design.pages.dev> |
+| 🎬 **Presentation Video** | <https://youtu.be/EIuQuOuc-0o> |
 
 ---
 
